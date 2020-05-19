@@ -1,20 +1,39 @@
 #ifndef SERIALCOM_HPP_INCLUDED
 #define SERIALCOM_HPP_INCLUDED
 
+/**Abhaengig vom laufenden Betriebssystem werden die benoetigten Bibliotheken geladen.*/
 #ifdef LINUX
 
 #elif defined(WIN32)
     #include <windows.h>
 #endif
 
+
+/** \brief Interface fuer die serielle Kommunikation. Beinhaltet vier rein virtuelle Funktionen zum Oeffnen und Schliessen
+ * einer seriellen Verbindung. Sowie das Schreiben und Lesen von Daten ueber die serielle Verbindung.
+ *
+ * \param
+ * \param
+ * \return
+ *
+ */
 class ISerialCom {
 public:
+    virtual bool initSerialCom (const char* portName, unsigned int baudRate) = 0;
     virtual bool openSerialCom () = 0;
     virtual bool closeSerialCom () = 0;
     virtual bool writeSerialCom (unsigned char* command) = 0;
-    virtual bool readSerialCom (unsigned char* response) = 0;
+    virtual unsigned int readSerialCom (unsigned char* command) = 0;
 };
 
+/** \brief Klasse erbt vom Interface ISerialCom und definiert die Funktionen.
+ *
+ * \param Portname (portName_)
+ * \param Baudrate (baudRate_)
+ * \param je nach Betriebssystem ein Handler für seriellen Port unter Windows bzw. ein File-Handler unter Linux
+ * \return
+ *
+ */
 class SerialCom : public ISerialCom {
 private:
     const char* portName_;
@@ -25,11 +44,13 @@ private:
         HANDLE port_;
     #endif
 public:
-    SerialCom (const char* portName, unsigned int baudRate);
+    bool initSerialCom (const char* portName, unsigned int baudRate);
     bool openSerialCom ();
     bool closeSerialCom ();
     bool writeSerialCom (unsigned char* command);
-    bool readSerialCom (unsigned char* response);
+    unsigned int readSerialCom (unsigned char* command);
+    const char* getPortName ();
+    unsigned int getBaudRate ();
 };
 
 #endif // SERIALCOM_HPP_INCLUDED

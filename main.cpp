@@ -1,19 +1,24 @@
 #include "SerialCom.hpp"
 #include "Pololu.hpp"
 #include <iostream>
+#include "windows.h"
 
 using namespace std;
 
+
+
+
 int main()
 {
-    SerialCom test("COM5", 9600);
-    unsigned char anweisung[4];
-    bool erfolg;
+    Pololu controller("COM4", 9600);
 
-    erfolg = test.openSerialCom();
-    cout << erfolg << endl;
-    test.writeSerialCom(anweisung);
-    test.closeSerialCom();
-
-    cout << "Hello world!" << endl;
+    controller.setPosition(0, 5000);
+    Sleep(2000);
+    controller.setPosition(1, 5000);
+    Sleep(2000);
+    controller.setPosition(0, 7000);
+    Sleep(2000);
+    controller.setPosition(1, 7000);
+    Sleep(2000);
 }
+

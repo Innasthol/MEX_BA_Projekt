@@ -21,6 +21,7 @@ class Pololu : public IPololu {
 private:
     SerialCom serialCom_;
 public:
+    Pololu (const char* portName, unsigned int baudRate);
     bool setPosition (unsigned char servo, unsigned short position);
     bool setSpeed (unsigned char servo, unsigned short speed);
     bool setAcceleration (unsigned char servo, unsigned short acceleration);

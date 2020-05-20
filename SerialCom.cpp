@@ -121,20 +121,45 @@ bool SerialCom::closeSerialCom () {
     #endif // LINUX
 }
 
+/** \brief Funktion dient dem Schreiben auf der seriellen Verbindung, die mit openSerialPort geoeffnet wurde.
+ *
+ * \param Als Parameter wird der Funktion eine Anweisung uebergeben, die das vom Controller auszufuehrende Kommando enthält.
+ * \return Rueckgabewert der Funktion ist ein Wahrheitswert, der angibt, ob das Schreiben ueber die serielle Verbindung erfolgreich war oder nicht.
+ *
+ */
 bool SerialCom::writeSerialCom (unsigned char* command) {
+    /**bytesTransfered liefert von WriteFile die Anzahl der Uebertragenen Bytes. */
     DWORD bytesTransfered;
 
     return WriteFile(port_, command, sizeof(command), &bytesTransfered, NULL);
 };
 
-unsigned int SerialCom::readSerialCom (unsigned char* command) {
+/*unsigned char* SerialCom::readSerialCom (unsigned char* command) {
+    DWORD bytesTransfered;
+    unsigned char response[2];
+    bool success;
+    bool read;
 
-};
+    success = writeSerialCom(command);
+    read = ReadFile(port_, response, sizeof(response), &bytesTransfered, NULL);
 
+    return response;
+};*/
+
+/** \brief Funktion dient dem anzeigen, welcher Portname fuer die serielle Verbindung gewaehlt wurde.
+ *
+ * \return Liefert als Rueckgabewert den gesetzten Portname als "const char".
+ *
+ */
 const char* SerialCom::getPortName (){
     return portName_;
 }
 
+/** \brief Funktion dient dem anzeigen, welche Baudrate fuer die serielle Verbindung gewaehlt wurde.
+ *
+ * \return Liefert als Rueckgabewert die gesetzte Baudrate als "unsigned int".
+ *
+ */
 unsigned int SerialCom::getBaudRate (){
     return baudRate_;
 }

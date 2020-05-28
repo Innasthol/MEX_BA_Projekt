@@ -1,13 +1,15 @@
 #include "SerialCom.hpp"
-#include <fcntl.h>
 #include <stdio.h>
 
 #ifdef _WIN32
-#define O_NOCTTY 0
+    #include <windows.h>
 #else
-#include <termios.h>
+
 #endif
 
+/** \brief Kontruktor der Klasse SerialCom
+ *
+ */
 SerialCom::SerialCom(){
 
 }
@@ -18,7 +20,7 @@ SerialCom::SerialCom(){
  * \param baudRate (Baudrate mit der die Communikation stattfinden soll)
  *
  */
-SerialCom::SerialCom(const char* portName, unsigned int baudRate){
+SerialCom::SerialCom(const char* portName, unsigned short baudRate){
     portName_ = portName;
     baudRate_ = baudRate;
 }
@@ -30,8 +32,12 @@ SerialCom::SerialCom(const char* portName, unsigned int baudRate){
  * \param baudRate (Baudrate mit der die Communikation stattfinden soll)
  *
  */
-void SerialCom::initSerialCom(const char* portName, unsigned int baudRate){
-    close(port_);
+void SerialCom::initSerialCom(const char* portName, unsigned short baudRate){
+    #ifdef _WIN32
+        CloseHandle(port_);
+    #else
+
+    #endif
     portName_ = portName;
     baudRate_ = baudRate;
 }
@@ -42,61 +48,139 @@ void SerialCom::initSerialCom(const char* portName, unsigned int baudRate){
  *
  */
 bool SerialCom::openSerialCom(){
-    closeSerialCom();
-    int port = open(portName_, O_RDWR | O_NOCTTY);
-    if (port == -1){
-        perror(portName_);
-        return 0;
-    }
-    port_ = port;
-    return 1;
+    #ifdef _WIN32
+        bool success = FALSE;
+        DCB state;
+
+
+        CloseHandle(port_);
+        port_ = CreateFileA(portName_, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (port_ == INVALID_HANDLE_VALUE){
+            perror("Failed to open Port\n");
+            return 0;
+        }
+
+        success = FlushFileBuffers(port_);
+        if (!success)
+        {
+            perror("Failed to flush serial port\n");
+            CloseHandle(port_);
+            return 0;
+        }
+
+        // Configure read and write operations to time out after 100 ms.
+        COMMTIMEOUTS timeouts = { 0 };
+        timeouts.ReadIntervalTimeout = 0;
+        timeouts.ReadTotalTimeoutConstant = 100;
+        timeouts.ReadTotalTimeoutMultiplier = 0;
+        timeouts.WriteTotalTimeoutConstant = 100;
+        timeouts.WriteTotalTimeoutMultiplier = 0;
+
+        success = SetCommTimeouts(port_, &timeouts);
+        if (!success)
+        {
+            perror("Failed to set serial timeouts\n");
+            CloseHandle(port_);
+            return 0;
+        }
+
+        state.DCBlength = sizeof(DCB);
+        success = GetCommState(port_, &state);
+        if (!success)
+        {
+            perror("Failed to get serial settings\n");
+            CloseHandle(port_);
+            return 0;
+        }
+        state.BaudRate = baudRate_;
+        success = SetCommState(port_, &state);
+        if (!success)
+        {
+            perror("Failed to set serial settings\n");
+            CloseHandle(port_);
+            return 0;
+        }
+
+        return 1;
+    #else
+
+    #endif
 }
 
 /** \brief Schliesst die gewuenschte serielle Verbindung.
  *
  */
 bool SerialCom::closeSerialCom(){
-    return close(port_);
+    #ifdef _WIN32
+        return CloseHandle(port_);
+    #else
+
+    #endif
 }
 
-/** \brief Funktion sendet ein erstelltes Kommando an den Pololu.
+/** \brief Funktion sendet ein erstelltes Kommando an den Controller.
  *
  * \param command (Das Kommando, das durch die Pololu-Klasse erstellt wird.
- * \return Liefert bei einem Fehler 0, bei erfolgreichen Set-Befehlen eine 1, und im Falle
+ * \return Liefert bei einem Fehler -1, bei erfolgreichen Set-Befehlen eine 1, und im Falle
  * von Get-Befehlen wird entweder die Position oder der Bewegungsstatus als Rueckgabewert zurueckgegeben.
  */
-unsigned short SerialCom::writeSerialCom(unsigned char command[]){
-    /**< Erstelltes Kommando wird an den Pololu ueber die offene serielle Schnittstelle uebertragen. */
-    if(write(port_, command, sizeof(command)) == -1){
-        perror("Schreiben fehlgeschlagen.");
-        return 0;
-    }
-    /**< Falls das Kommando getPosition(0x90) oder getMovingState(0x93) entspricht, erfordert es ein empfangen der Imformationen vom Pololu. */
-    if (command[0] == 0x90){
-        unsigned char response[2];
-        if(read(port_,response,2) != 2){
-            perror("Lesen fehlgeschlagen.");
-            return 0;
+short SerialCom::writeSerialCom(unsigned char command[]){
+    #ifdef _WIN32
+        DWORD written;
+        bool success;
+        unsigned char newSetCommand[4];
+        unsigned char newGetPositionCommand[2];
+        unsigned char newGetMovingCommand[1];
+
+        if ((command[0] == 0x84) || (command[0] == 0x87) || (command[0] == 0x89)){
+            newSetCommand[0] = command[0];
+            newSetCommand[1] = command[1];
+            newSetCommand[2] = command[2];
+            newSetCommand[3] = command[3];
+            success = WriteFile(port_, newSetCommand, sizeof(newSetCommand), &written, NULL);
+        }else if (command[0] == 0x90){
+            newGetPositionCommand[0] = command[0];
+            newGetPositionCommand[1] = command[1];
+            success = WriteFile(port_, newGetPositionCommand, sizeof(newGetPositionCommand), &written, NULL);
+        }else if (command[0] == 0x93){
+            newGetMovingCommand[0] = command[0];
+            success = WriteFile(port_, newGetMovingCommand, sizeof(newGetMovingCommand), &written, NULL);
         }
-        /**< Liefert die aktuell eingenommene Position des abgefragten Servos. */
-        return response[0] + 256*response[1];
-    }else if (command[0] == 0x93){
-        unsigned char response[1];
-        if(read(port_,response,1) != 1){
-            perror("Lesen fehlgeschlagen.");
-            return 0;
+        if (!success){
+            perror("Failed to write to port");
+            return -1;
         }
-        /**< Liefert den Bewegungsstatus aller angeschlossenen Servos. */
-        return response[0];
-    }
-    return 1;
+        if (command[0] == 0x90){
+            unsigned char newRead[2];
+            success = ReadFile(port_, newRead, sizeof(newRead), &written, NULL);
+            if (!success){
+                perror("Failed to read from port\n");
+                return -1;
+            }
+            return newRead[0] + 256 * newRead[1];
+        }else if (command[0] == 0x93){
+            unsigned char newRead[1];
+            success = ReadFile(port_, newRead, sizeof(newRead), &written, NULL);
+            if (!success){
+                perror("Failed to read from port\n");
+                return -1;
+            }
+            return newRead[0];
+        }
+        return 1;
+    #else
+
+    #endif
 }
 
-/** \brief
+/** \brief Funktion liefert den initierten Port.
  *
- * \return
- *
+ *  \return Rückgabe wert ist unter Windows der Port-HANDLE und unter LINUX der Port als Integer.
  */
-int SerialCom::getPort(){
+#ifdef _WIN32
+    HANDLE SerialCom::getPort(){
+#else
+    int SerialCom::getPort(){
+#endif
     return port_;
 }

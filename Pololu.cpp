@@ -19,7 +19,7 @@ Pololu::Pololu(const char* portName, unsigned short baudRate){
  *
  */
 bool Pololu::openConnection(){
-    serialCom.openSerialCom();
+    return serialCom.openSerialCom();
 }
 
 /** \brief Schliesst durch Aufrufen der closeSerialCom() eine serielle Verbindung.
@@ -28,7 +28,7 @@ bool Pololu::openConnection(){
  *
  */
 bool Pololu::closeConnection(){
-    serialCom.closeSerialCom();
+    return serialCom.closeSerialCom();
 }
 
 /** \brief Dient dem Anfahren einer Position. Ruft dazu die Funktion writeSerialCom() der SerialCom-Klasse auf.
@@ -44,8 +44,12 @@ bool Pololu::setPosition(unsigned int servo, unsigned short goToPosition){
      * servo = Anzusprechender Servo 0 - 11
      * goToPositiion = aufgeteilt auf 2 Byte, zuerst die low bits, dann die high bits
      */
-    unsigned char command[4] = {0x84, servo, goToPosition & 0x7F, goToPosition >> 7 & 0x7F};
+    unsigned char command[] = {0x84, servo, goToPosition & 0x7F, goToPosition >> 7 & 0x7F};
     serialCom.writeSerialCom(command);
+}
+
+void Pololu::initConnection(const char* portName, unsigned short baudRate){
+    serialCom.initSerialCom(portName, baudRate);
 }
 
 /** \brief Dient dem Setzen der Geschwindikeit mit der sich der Servo drehen soll.

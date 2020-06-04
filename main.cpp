@@ -95,8 +95,8 @@ void testOpenClose (){
  *
  */
 void testSetGetMethoden () {
-    unsigned short speed = 80;
-    unsigned short acceleration = 0;
+    unsigned short speed = 100;
+    unsigned short acceleration = 10;
     unsigned short servo = SERVO_01;
     Pololu conn("COM4", 9600);
     cout << "Create Pololu-Object: Object created." << endl;
@@ -109,14 +109,14 @@ void testSetGetMethoden () {
 
     /** Testing to set speed and acceleration to a servo */
     if (conn.setSpeed(servo, speed)){
-        cout << "Set speed of Servo " << servo << " to " << speed << ": Successfully" << endl;
+        cout << "Set speed of Servo " << servo << " to " << speed << " (" << speed*0.25/10 << " us/ms): Successfully" << endl;
     }else{
-        cout << "Set speed of Servo " << servo << " to " << speed << ": Failed" << endl;
+        cout << "Set speed of Servo " << servo << " to " << speed << " (" << speed*0.25/10 << " us/ms): Failed" << endl;
     }
     if (conn.setAcceleration(servo, acceleration)){
-        cout << "Set acceleration of Servo " << servo << " to " << acceleration << ": Successfully" << endl;
+        cout << "Set acceleration of Servo " << servo << " to " << acceleration << " (" << acceleration*0.25/10/80 << " us/(ms)^2): Successfully" << endl;
     }else{
-        cout << "Set acceleration of Servo " << servo << " to " << acceleration << ": Failed" << endl;
+        cout << "Set acceleration of Servo " << servo << " to " << acceleration << " (" << acceleration*0.25/10/80 << " us/(ms)^2): Failed" << endl;
     }
 
     /** Testing to read the current position of the servo */

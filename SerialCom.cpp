@@ -1,5 +1,7 @@
 #include "SerialCom.hpp"
 #include <stdio.h>
+#include <string>
+#include <iostream>
 
 #ifdef _WIN32
     #include <windows.h>
@@ -7,17 +9,17 @@
 
 #endif
 
-/** \brief Kontruktor der Klasse SerialCom
+/** \brief SerialCom class constructor.
  *
  */
 SerialCom::SerialCom(){
 
 }
 
-/** \brief Kontruktor der Klasse SerialCom: Initialisiert eine serielle Verbindung
+/** \brief SerialCom class constructor.: Initializes a serial connection.
  *
- * \param portName (COM-Port-Name der vom Betriebssystem dem Pololu zugewiesen wird)
- * \param baudRate (Baudrate mit der die Communikation stattfinden soll)
+ * \param portName (COM port name assigned to the Pololu by the operating system)
+ * \param baudRate (Baud rate with which the controller should communicate)
  *
  */
 SerialCom::SerialCom(const char* portName, unsigned short baudRate){
@@ -25,11 +27,10 @@ SerialCom::SerialCom(const char* portName, unsigned short baudRate){
     baudRate_ = baudRate;
 }
 
-/** \brief Initialisiert eine serielle Verbindung. Versetzt die serielle Verbindung in den gleichen Zustand wie der Konstruktor.
- * Diese Funktion kann genutzt werden, um eine serielle Verbindung zu aendern bzw. auch die Baudrate zu veraendern.
+/** \brief Initializes a serial connection. Puts the serial link in the same state as the constructor. This function can be used to change a serial connection or to change the baud rate.
  *
- * \param portName (COM-Port-Name der vom Betriebssystem dem Pololu zugewiesen wird)
- * \param baudRate (Baudrate mit der die Communikation stattfinden soll)
+ * \param portName (COM port name assigned to the Pololu by the operating system)
+ * \param baudRate (Baud rate with which the controller should communicate)
  *
  */
 void SerialCom::initSerialCom(const char* portName, unsigned short baudRate){
@@ -42,9 +43,9 @@ void SerialCom::initSerialCom(const char* portName, unsigned short baudRate){
     baudRate_ = baudRate;
 }
 
-/** \brief Oeffnet eine serielle Verbindung zum COM-Port der bei der Initialisierung festgelegt wurde.
+/** \brief Opens a serial connection to the COM port that was defined during initialization.
  *
- * \return Liefert einen boolschen Wert, ob das Oeffnen der seriellen Verbindung funktioniert hat oder nicht (1 = Verbindung geoeffnet; 0 = Verbindung fehlgeschlagen).
+ * \return Returns a Boolean value, whether the opening of the serial connection worked or not (1 = connection opened; 0 = connection failed).
  *
  */
 bool SerialCom::openSerialCom(){
@@ -52,18 +53,17 @@ bool SerialCom::openSerialCom(){
         bool success = FALSE;
         DCB state;
 
-
         CloseHandle(port_);
         port_ = CreateFileA(portName_, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (port_ == INVALID_HANDLE_VALUE){
-            perror("Failed to open Port\n");
+            throw std::string("SerialCom::openSerialCom: Failed to open port.\n");
             return 0;
         }
 
         success = FlushFileBuffers(port_);
         if (!success)
         {
-            perror("Failed to flush serial port\n");
+            throw std::string("SerialCom::openSerialCom: Failed to flush file buffer.\n");
             CloseHandle(port_);
             return 0;
         }
@@ -79,7 +79,7 @@ bool SerialCom::openSerialCom(){
         success = SetCommTimeouts(port_, &timeouts);
         if (!success)
         {
-            perror("Failed to set serial timeouts\n");
+            throw std::string("SerialCom::openSerialCom: Failed to set serial timeouts.\n");
             CloseHandle(port_);
             return 0;
         }
@@ -88,7 +88,7 @@ bool SerialCom::openSerialCom(){
         success = GetCommState(port_, &state);
         if (!success)
         {
-            perror("Failed to get serial settings\n");
+            throw std::string("SerialCom::openSerialCom: Failed to get serial settings.\n");
             CloseHandle(port_);
             return 0;
         }
@@ -96,7 +96,7 @@ bool SerialCom::openSerialCom(){
         success = SetCommState(port_, &state);
         if (!success)
         {
-            perror("Failed to set serial settings\n");
+            throw std::string("SerialCom::openSerialCom: Failed to set serial settings.\n");
             CloseHandle(port_);
             return 0;
         }
@@ -112,7 +112,11 @@ bool SerialCom::openSerialCom(){
  */
 bool SerialCom::closeSerialCom(){
     #ifdef _WIN32
-        return CloseHandle(port_);
+        if (CloseHandle(port_) == 0){
+            throw std::string("SerialCom::closeSerialCom: Failed to close port.\n");
+            return 0;
+        }
+        return 1;
     #else
 
     #endif
@@ -124,50 +128,33 @@ bool SerialCom::closeSerialCom(){
  * \return Liefert bei einem Fehler -1, bei erfolgreichen Set-Befehlen eine 1, und im Falle
  * von Get-Befehlen wird entweder die Position oder der Bewegungsstatus als Rueckgabewert zurueckgegeben.
  */
-short SerialCom::writeSerialCom(unsigned char command[]){
+bool SerialCom::writeSerialCom(unsigned char command[], unsigned short sizeCommand, unsigned char *response, unsigned short sizeResponse){
     #ifdef _WIN32
-        DWORD written;
-        bool success;
-        unsigned char newSetCommand[4];
-        unsigned char newGetPositionCommand[2];
-        unsigned char newGetMovingCommand[1];
+        DWORD bytesTrasfered;
+        bool success = 0;
 
-        if ((command[0] == 0x84) || (command[0] == 0x87) || (command[0] == 0x89)){
-            newSetCommand[0] = command[0];
-            newSetCommand[1] = command[1];
-            newSetCommand[2] = command[2];
-            newSetCommand[3] = command[3];
-            success = WriteFile(port_, newSetCommand, sizeof(newSetCommand), &written, NULL);
-        }else if (command[0] == 0x90){
-            newGetPositionCommand[0] = command[0];
-            newGetPositionCommand[1] = command[1];
-            success = WriteFile(port_, newGetPositionCommand, sizeof(newGetPositionCommand), &written, NULL);
-        }else if (command[0] == 0x93){
-            newGetMovingCommand[0] = command[0];
-            success = WriteFile(port_, newGetMovingCommand, sizeof(newGetMovingCommand), &written, NULL);
+        //** Laenge des Kommandos ueberpruefen */
+        if ((sizeCommand != 1) && (sizeCommand != 2) && (sizeCommand != 4)){
+            throw std::string("SerialCom::writeSerialCom: wrong parameter sizeCommand, allowed parameter 1,2 or 4.");
+        }
+
+        //** Schreiben der Daten */
+        success = WriteFile(port_, command, sizeCommand, &bytesTrasfered, NULL);
+        if (!success){
+            throw std::string("SerialCom::writeSerialCom: Failed to write to port.");
+            return FALSE;
+        }
+
+        //** Ueberpruefen ob Daten gelesen werden muessen */
+        if (sizeResponse > 0){
+            success = ReadFile(port_, (void *)response, sizeResponse, &bytesTrasfered, NULL);
+        }else{
+            return TRUE; //Es sind keine Daten zu lesen. Rueckmeldung des erfolgreichen Schreiben der Daten.
         }
         if (!success){
-            perror("Failed to write to port");
-            return -1;
+            throw std::string("SerialCom::writeSerialCom: Failed to read from port.");
         }
-        if (command[0] == 0x90){
-            unsigned char newRead[2];
-            success = ReadFile(port_, newRead, sizeof(newRead), &written, NULL);
-            if (!success){
-                perror("Failed to read from port\n");
-                return -1;
-            }
-            return newRead[0] + 256 * newRead[1];
-        }else if (command[0] == 0x93){
-            unsigned char newRead[1];
-            success = ReadFile(port_, newRead, sizeof(newRead), &written, NULL);
-            if (!success){
-                perror("Failed to read from port\n");
-                return -1;
-            }
-            return newRead[0];
-        }
-        return 1;
+        return TRUE; //Rueckmeldung das Daten geschrieben wurden und gelesene Daten im Array response gespeichert wurden.
     #else
 
     #endif

@@ -1,11 +1,11 @@
 #include "Pololu.hpp"
 #include "SerialCom.hpp"
-#include <windows.h>
+#include <string>
+#include <iostream>
 
-/** \brief Kontruktor der Pololu-Klasse. Initialiesiert die serielle Schnittstelle durch Aufrufen
- * der initSerialCom der SerialCom-Klasse.
+/** \brief Pololu class constructor. Initializes the serial interface by calling initSerialCom of the SerialCom class.
  *
- * \param portName
+ * \param portName (COM-Portname: e.g. COM4)
  * \param baudRate
  *
  */
@@ -13,108 +13,170 @@ Pololu::Pololu(const char* portName, unsigned short baudRate){
     serialCom.initSerialCom(portName, baudRate);
 }
 
-/** \brief Oeffnet durch Aufrufen der openSerialCom() eine serielle Verbindung.
+/** \brief Opens a serial connection by calling the openSerialCom () function of the SerialCom class.
  *
  * \return
  *
  */
 bool Pololu::openConnection(){
-    return serialCom.openSerialCom();
+    try{
+        serialCom.openSerialCom();
+    }catch(std::string errorMessage){
+        std::cout << errorMessage;
+        return 0;
+    }
+    return 1;
 }
 
-/** \brief Schliesst durch Aufrufen der closeSerialCom() eine serielle Verbindung.
+/** \brief Closes a serial connection by calling closeSerialCom ().
  *
  * \return
  *
  */
 bool Pololu::closeConnection(){
-    return serialCom.closeSerialCom();
-}
-
-/** \brief Dient dem Anfahren einer Position. Ruft dazu die Funktion writeSerialCom() der SerialCom-Klasse auf.
- *
- * \param servo = anzusprechender Servo
- * \param goToPosition = Position, die der gewaehlte Servo anfahren soll
- * \return Rueckgabewert, ob das Schreiben funktioniert hat
- *
- */
-bool Pololu::setPosition(unsigned int servo, unsigned short goToPosition){
-    /* Generiert den Befehl fuer den Pololu
-     * 0x84 = Kommando fuer das setzen der Position
-     * servo = Anzusprechender Servo 0 - 11
-     * goToPositiion = aufgeteilt auf 2 Byte, zuerst die low bits, dann die high bits
-     */
-    unsigned char command[] = {0x84, servo, goToPosition & 0x7F, goToPosition >> 7 & 0x7F};
-    serialCom.writeSerialCom(command);
+    try{
+        serialCom.closeSerialCom();
+    }catch(std::string errorMessage){
+        std::cout << errorMessage;
+        return 0;
+    }
+    return 1;
 }
 
 void Pololu::initConnection(const char* portName, unsigned short baudRate){
     serialCom.initSerialCom(portName, baudRate);
 }
 
-/** \brief Dient dem Setzen der Geschwindikeit mit der sich der Servo drehen soll.
- * Ruft dazu die Funktion writeSerialCom() der SerialCom-Klasse auf.
+/** \brief Moves servo to a assumed position.
  *
- * \param servo = anzusprechender Servo
- * \param goToSpeed = Geschwindigkeit, die der gewaehlte Servo annehmen soll
- * \return Rueckgabewert, ob das Schreiben funktioniert hat
- *
- */
-bool Pololu::setSpeed(unsigned int servo, unsigned short goToSpeed){
-    /* Generiert den Befehl fuer den Pololu
-     * 0x87 = Kommando fuer das setzen der Geschwindigkeit
-     * servo = Anzusprechender Servo 0 - 11
-     * goToSpeed = aufgeteilt auf 2 Byte, zuerst die low bits, dann die high bits
-     */
-    unsigned char command[] = {0x87, servo, goToSpeed & 0x7F, goToSpeed >> 7 & 0x7F};
-    serialCom.writeSerialCom(command);
-}
-
-/** \brief Dient dem Setzen der Beschleunigung mit der der Servo die gesetzte Geschwindigkeit erreicht.
- * Ruft dazu die Funktion writeSerialCom() der SerialCom-Klasse auf.
- *
- * \param servo = anzusprechender Servo
- * \param goToAcceleration = Beschleunigung, die der gewaehlte Servo annehmen soll
- * \return Rueckgabewert, ob das Schreiben funktioniert hat
+ * \param servo = servo to address
+ * \param goToPosition = Position that the selected servo should assume
+ * \return The return value is 1 if writing was successfully, 0 if the was an error while writing
  *
  */
-bool Pololu::setAcceleration(unsigned int servo, unsigned short goToAcceleration){
-    /* Generiert den Befehl fuer den Pololu
-     * 0x89 = Kommando fuer das setzen der Beschleunigung
-     * servo = Anzusprechender Servo 0 - 11
-     * goToAcceleration = aufgeteilt auf 2 Byte, zuerst die low bits, dann die high bits
+bool Pololu::setPosition(unsigned short servo, unsigned short goToPosition){
+    /* Generates the command for the controller.
+     * 0x84 = Command for setting the position
+     * servo = servo to address as a transfer parameter
+     * goToPositiion = divided into 2 bytes, first the low bits, then the high bits
      */
-    unsigned char command[] = {0x89, servo, goToAcceleration & 0x7F, goToAcceleration >> 7 & 0x7F};
-    serialCom.writeSerialCom(command);
+    unsigned short sizeCommand = 4;
+    unsigned char command[] = {0x84, (unsigned char)servo, (unsigned char)(goToPosition & 0x7F), (unsigned char)((goToPosition >> 7) & 0x7F)};
+    try{
+        serialCom.writeSerialCom(command, sizeCommand, NULL, 0);
+    }catch(std::string errorMessage){
+        throw std::string("Pololu::setPosition: " + errorMessage);
+        return FALSE;
+    }catch(...){
+        throw std::string("Pololu::setPosition: Unknown error, while writing to port.");
+        return FALSE;
+    }
+    return TRUE;
 }
 
-/** \brief Dient dem Ermitteln der aktuellen Position eines Servos.
- * Ruft dazu die Funktion writeSerialCom() der SerialCom-Klasse auf.
+/** \brief Sets the speed at which the servo should turn.
  *
- * \param servo = anzusprechender Servo
- * \return Aktuelle Position des Servos als Unsigned Short.
+ * \param servo = servo to address
+ * \param goToSpeed = Speed that the selected servo should assume
+ * \return The return value is 1 if writing was successfully, 0 if the was an error while writing
  *
  */
-unsigned short Pololu::getPosition(unsigned int servo){
-    /* Generiert den Befehl fuer den Pololu
-     * 0x90 = Kommando fuer das auslesen der Position
-     * servo = Anzusprechender Servo 0 - 11
+bool Pololu::setSpeed(unsigned short servo, unsigned short goToSpeed){
+    /* Generates the command for the controller.
+     * 0x87 = Command for setting the speed
+     * servo = servo to address as a transfer parameter
+     * goToSpeed = divided into 2 bytes, first the low bits, then the high bits
      */
-    unsigned char command[] = {0x90, servo};
-    return serialCom.writeSerialCom(command);
+    unsigned short sizeCommand = 4;
+    unsigned char command[] = {0x87, (unsigned char)servo, (unsigned char)(goToSpeed & 0x7F), (unsigned char)((goToSpeed >> 7) & 0x7F)};
+    try{
+        serialCom.writeSerialCom(command, sizeCommand, NULL, 0);
+    }catch(std::string errorMessage){
+        throw std::string("Pololu::setSpeed: " + errorMessage);
+        return FALSE;
+    }catch(...){
+        throw std::string("Pololu::setSpeed: Unknown error, while writing to port.");
+        return FALSE;
+    }
+    return TRUE;
 }
 
-/** \brief Dient dem Ermitteln sich eines der angeschlossenen Servos noch in Bewegung ist.
- * Ruft dazu die Funktion writeSerialCom() der SerialCom-Klasse auf.
+/** \brief Sets the acceleration with which the servo reaches the set speed.
  *
- * \param servo = anzusprechender Servo
- * \return Aktuelle Position des Servos als Unsigned Short.
+ * \param servo = servo to address
+ * \param goToAcceleration = Acceleration that the selected servo should assume
+ * \return The return value is 1 if writing was successfully, 0 if the was an error while writing
+ *
+ */
+bool Pololu::setAcceleration(unsigned short servo, unsigned short goToAcceleration){
+    /* Generates the command for the controller.
+     * 0x89 = Command for setting the acceleration
+     * servo = servo to address as a transfer parameter
+     * goToAcceleration = divided into 2 bytes, first the low bits, then the high bits
+     */
+    unsigned short sizeCommand = 4;
+
+    unsigned char command[] = {0x89, (unsigned char)servo, (unsigned char)(goToAcceleration & 0x7F), (unsigned char)((goToAcceleration >> 7) & 0x7F)};
+    try{
+        serialCom.writeSerialCom(command, sizeCommand, NULL, 0);
+    }catch(std::string errorMessage){
+        throw std::string("Pololu::setAcceleration: " + errorMessage);
+        return FALSE;
+    }catch(...){
+        throw std::string("Pololu::setAcceleration: Unknown error, while writing to port.");
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/** \brief Determines the current position of a servo.
+ *
+ * \param servo = servo to address
+ * \return The return value is the current position of the selected servo
+ *
+ */
+unsigned short Pololu::getPosition(unsigned short servo){
+    /* Generates the command for the controller.
+     * 0x90 = Command for reading out the position
+     * servo = servo to address as a transfer parameter
+     */
+    unsigned short sizeCommand = 2;
+    unsigned short sizeResponse = 2;
+    unsigned char response[sizeResponse];
+
+    unsigned char command[] = {0x90, (unsigned char)servo};
+    try{
+        serialCom.writeSerialCom(command, sizeCommand, response, sizeResponse);
+    }catch(std::string errorMessage){
+        throw std::string("Pololu::getPosition: " + errorMessage);
+    }catch(...){
+        throw std::string("Pololu::getPosition: Unknown error, while writing/reading to port.");
+    }
+
+    return response[0] + 256 * response[1];
+}
+
+/** \brief Determines whether one of the connected servos is still in motion.
+ *
+ * \param servo = Suitable servo
+ * \return The return value is 1 if a servo is still moving, 0 if there is no moving
  *
  */
 bool Pololu::getMovingState(){
-    /* Generiert den Befehl fuer den Pololu
-     * 0x93 = Kommando fuer das auslesen der Position
+    /* Generates the command for the controller.
+     * 0x93 = Command for reading out movements
      */
+    unsigned short sizeCommand = 1;
+    unsigned short sizeResponse = 1;
+    unsigned char response[sizeResponse];
+
     unsigned char command[] = {0x93};
-    return serialCom.writeSerialCom(command);
+    try{
+        serialCom.writeSerialCom(command, sizeCommand, response, sizeResponse);
+    }catch(std::string errorMessage){
+        throw std::string("Pololu::getMovingState: " + errorMessage);
+    }catch(...){
+        throw std::string("Pololu::getMovingState: Unknown error, while writing/reading to port.");
+    }
+    return response[0]; // The return value is 1 if a servo is still moving, 0 if there is no moving.
 }

@@ -15,7 +15,7 @@ public:
     virtual void initSerialCom(const char* portName, unsigned short baudRate) = 0;
     virtual bool openSerialCom() = 0;
     virtual bool closeSerialCom() = 0;
-    virtual short writeSerialCom(unsigned char command[]) = 0;
+    virtual bool writeSerialCom(unsigned char command[], unsigned short sizeCommand, unsigned char *response, unsigned short sizeResponse) = 0;
 };
 
 /** \brief Klasse fuer eine serielle Verbingung ueber einen COM-PORT
@@ -43,7 +43,7 @@ public:
     bool openSerialCom();
     bool closeSerialCom();
     /**< Uebertragen von Befehlen an den Controller */
-    short writeSerialCom(unsigned char command[]);
+    bool writeSerialCom(unsigned char command[], unsigned short sizeCommand, unsigned char *response, unsigned short sizeResponse);
     /**< Je nach Betriebssystem liefert die Funktion den aktiven Port */
     #ifdef _WIN32
         HANDLE getPort();

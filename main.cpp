@@ -1,6 +1,7 @@
 #include "Pololu.hpp"
-#include <iostream>
 #include <windows.h>
+#include <string>
+#include <iostream>
 
 #define SERVO_01    0
 #define SERVO_02    1
@@ -14,41 +15,41 @@
 #define SERVO_10    9
 #define SERVO_11   10
 #define SERVO_12   11
-#define MINPOS   2200
-#define GOHOME   5000
-#define MAXPOS   7800
+#define MINPOS   1984
+#define MIDPOS   4992
+#define MAXPOS   8000
 
 using namespace std;
 
-/** \brief Funktion testet systematisch das Oeffnen und Schliessen einer seriellen Verbindung
+/** \brief Function systematically tests the opening and closing of a serial connection
  *
  */
 void testOpenClose (){
-    //Festlegen des Portnamen und der Baudrate(noch nicht in Benutzung)
+    //Define the port name and the baud rate
     const char* portName = "COM4";  // Windows, "\\\\.\\COM6" also works
     //const char* portName = "/dev/ttyACM0";  // Linux
     unsigned short baudRate = 9600;
-    //Definieren eines Pololu-Objektes
+    //Define a Pololu object
     Pololu conn(portName, baudRate);
 
     /**< Test 1 */
-    //Oeffnen des seriellen Ports mit den Initialisierten Portnamen und Baudrate;
+    //Open the serial port with the initialized port name and baud rate
     if (conn.openConnection()){
         std::cout << "TEST_01 :: " << portName << ": Connection opened successfully" << std::endl;
     }
-    //Oeffnen des selben Ports nochmal
+    //Open the same port again
     if (conn.openConnection()){
         std::cout << "TEST_01 :: " << portName << ": Connection opened successfully" << std::endl;
     }
 
     /**< Test 2 */
-    //Schliessen des Ports
+    //Close the port
     if (conn.closeConnection()){
         std::cout << "TEST_02 :: " << portName << ": Connection closed successfully" << std::endl;
     }else{
         std::cout << "TEST_02 :: " << portName << ": No connection to close" << std::endl;
     }
-    //Erneutes Schliessen eines bereits geschlossenen Ports
+    //Close the same port again
     if (conn.closeConnection()){
         std::cout << "TEST_02 :: " << portName << ": Connection closed successfully" << std::endl;
     }else{
@@ -56,9 +57,9 @@ void testOpenClose (){
     }
 
     /**< Test 3 */
-    //Neu initialisieren des seriellen Ports mit unbekanntem Namen
+    //Reinitialize the serial port with an unknown name
     conn.initConnection("COM7", baudRate);
-    //Oeffnen des neu initialisierten Ports
+    //Open the newly initialized port
     if (conn.openConnection()){
         std::cout << "TEST_03 :: " << "COM7" << ": Connection opened successfully" << std::endl;
     }else{
@@ -66,13 +67,13 @@ void testOpenClose (){
     }
 
     /**< Test 4 */
-    //Neu initialisieren des seriellen Ports mit einem bekannten Port, jedoch nicht Pololu
+    //Reinitialize the serial port with a known port, but not from the Pololu
     conn.initConnection("COM1", baudRate);
-    //Oeffnen des Ports
+    //Open the port
     if (conn.openConnection()){
         std::cout << "TEST_04 :: " << "COM1" << ": Connection opened successfully" << std::endl;
     }
-    //Schliessen des Ports
+    //Close the port
     if (conn.closeConnection()){
         std::cout << "TEST_04 :: "<< portName << ": Connection closed successfully" << std::endl;
     }else{
@@ -80,7 +81,7 @@ void testOpenClose (){
     }
 
     /**< Test 5 */
-    //Neu initialisieren des seriellen Ports mit Pololu-Port
+    //Reinitialize the serial port with a Pololu known port
     conn.initConnection(portName, baudRate);
     for (int i = 0; i < 10; i++){
         if (conn.openConnection()){
@@ -90,31 +91,52 @@ void testOpenClose (){
     conn.closeConnection();
 };
 
-/** \brief Funktion testet systematisch das Schreiben und Lesen einer seriellen Verbindung
+/** \brief Function systematically tests the writing and reading of a serial connection
  *
  */
 void testSetGetMethoden () {
+    unsigned short speed = 80;
+    unsigned short acceleration = 0;
+    unsigned short servo = SERVO_01;
     Pololu conn("COM4", 9600);
-    conn.openConnection();
+    cout << "Create Pololu-Object: Object created." << endl;
 
-    //cout << "Current Position: " << conn.getPosition(SERVO_01) << endl;
+    /** Testing to open a serial port */
+    cout << "Open a serial connection: ";
+    if (conn.openConnection()){
+        cout << "Connection opened." << endl;
+    }
 
-    conn.setSpeed(SERVO_01, 100);
-    conn.setAcceleration(SERVO_01, 0);
+    /** Testing to set speed and acceleration to a servo */
+    if (conn.setSpeed(servo, speed)){
+        cout << "Set speed of Servo " << servo << " to " << speed << ": Successfully" << endl;
+    }else{
+        cout << "Set speed of Servo " << servo << " to " << speed << ": Failed" << endl;
+    }
+    if (conn.setAcceleration(servo, acceleration)){
+        cout << "Set acceleration of Servo " << servo << " to " << acceleration << ": Successfully" << endl;
+    }else{
+        cout << "Set acceleration of Servo " << servo << " to " << acceleration << ": Failed" << endl;
+    }
 
-    for (int i=0; i<10; i++){
-        if (conn.getPosition(SERVO_01) < 5000){
-            conn.setPosition(SERVO_01, MAXPOS);
+    /** Testing to read the current position of the servo */
+    cout << "Current position of servo " << servo << " is " << conn.getPosition(servo) << endl;
+
+    /** Test the setting of different positions for a servo and check whether a servo is still in motion */
+    for (int i = 0; i < 5; i++){
+        if (conn.getPosition(servo) < MIDPOS){
+            cout << i << ". Servo " << servo+1 << " goes to position " << MAXPOS << endl;
+            conn.setPosition(servo, MAXPOS);
             while(conn.getMovingState()){
                 //cout << "waiting" << endl;
             }
         }else{
-            conn.setPosition(SERVO_01, MINPOS);
+            cout << i << ". Servo " << servo+1 << " goes to position " << MINPOS << endl;
+            conn.setPosition(servo, MINPOS);
             while(conn.getMovingState()){
                 //cout << "waiting" << endl;
             }
         }
-        cout << "Position: " << conn.getPosition(SERVO_01) << endl;
     }
 }
 

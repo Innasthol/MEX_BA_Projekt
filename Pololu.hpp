@@ -8,10 +8,10 @@
  */
 class IPololu {
 public:
-    virtual bool setPosition(unsigned int servo, unsigned short goToPosition) = 0;
-    virtual bool setSpeed(unsigned int servo, unsigned short goToSpeed) = 0;
-    virtual bool setAcceleration(unsigned int servo, unsigned short goToAcceleration) = 0;
-    virtual unsigned short getPosition(unsigned int servo) = 0;
+    virtual bool setPosition(unsigned short servo, unsigned short goToPosition) = 0;
+    virtual bool setSpeed(unsigned short servo, unsigned short goToSpeed) = 0;
+    virtual bool setAcceleration(unsigned short servo, unsigned short goToAcceleration) = 0;
+    virtual unsigned short getPosition(unsigned short servo) = 0;
     virtual bool getMovingState() = 0;
 };
 
@@ -32,13 +32,13 @@ public:
     bool openConnection();
     bool closeConnection();
     /**< Servo faehrt eine neue Position an */
-    bool setPosition(unsigned int servo, unsigned short goToPosition);
+    bool setPosition(unsigned short servo, unsigned short goToPosition);
     /**< Geschwindkeit fuer eine Servo wird gesetzt */
-    bool setSpeed(unsigned int servo, unsigned short goToSpeed);
+    bool setSpeed(unsigned short servo, unsigned short goToSpeed);
     /**< Beschleunigung fuer eine Servo wird gesetzt */
-    bool setAcceleration(unsigned int servo, unsigned short goToAcceleration);
+    bool setAcceleration(unsigned short servo, unsigned short goToAcceleration);
     /**< Liefert die aktuelle Position eines Servos */
-    unsigned short getPosition(unsigned int servo);
+    unsigned short getPosition(unsigned short servo);
     /**< Liefert den Bewegungsstatus aller Servos */
     bool getMovingState();
 };

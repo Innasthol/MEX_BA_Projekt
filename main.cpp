@@ -15,9 +15,14 @@
 #define SERVO_10    9
 #define SERVO_11   10
 #define SERVO_12   11
-#define MINPOS   1984
-#define MIDPOS   4992
-#define MAXPOS   8000
+#define ARM_MINPOS   1984
+#define ARM_MIDPOS   5792
+#define ARM_MAXPOS   9216
+#define GREIFER_MINPOS   1984
+#define GREIFER_MIDPOS   3808
+#define GREIFER_MAXPOS   5632
+
+
 
 using namespace std;
 
@@ -98,7 +103,7 @@ void testSetGetMethoden () {
     unsigned short speed = 100;
     unsigned short acceleration = 10;
     unsigned short servo = SERVO_01;
-    Pololu conn("COM4", 9600);
+    Pololu conn("COM5", 9600);
     cout << "Create Pololu-Object: Object created." << endl;
 
     /** Testing to open a serial port */
@@ -124,15 +129,15 @@ void testSetGetMethoden () {
 
     /** Test the setting of different positions for a servo and check whether a servo is still in motion */
     for (int i = 0; i < 5; i++){
-        if (conn.getPosition(servo) < MIDPOS){
-            cout << i << ". Servo " << servo+1 << " goes to position " << MAXPOS << endl;
-            conn.setPosition(servo, MAXPOS);
+        if (conn.getPosition(servo) < ARM_MIDPOS){
+            cout << i << ". Servo " << servo+1 << " goes to position " << ARM_MAXPOS << endl;
+            conn.setPosition(servo, ARM_MAXPOS);
             while(conn.getMovingState()){
                 //cout << "waiting" << endl;
             }
         }else{
-            cout << i << ". Servo " << servo+1 << " goes to position " << MINPOS << endl;
-            conn.setPosition(servo, MINPOS);
+            cout << i << ". Servo " << servo+1 << " goes to position " << ARM_MINPOS << endl;
+            conn.setPosition(servo, ARM_MINPOS);
             while(conn.getMovingState()){
                 //cout << "waiting" << endl;
             }
@@ -140,8 +145,83 @@ void testSetGetMethoden () {
     }
 }
 
+void testMEXMovement(){
+    unsigned short speed = 30;
+    unsigned short acceleration = 10;
+    Pololu conn("COM5", 9600);
+
+    //** Open connection to COM port
+    conn.openConnection();
+
+    //** Set speed and acceleration for all servos
+    for (unsigned short i = 0; i < 4; i++){
+        conn.setSpeed(i, speed);
+        conn.setAcceleration(i, acceleration);
+    }
+
+    //** leaving parking position
+    conn.setPosition(SERVO_02, ARM_MIDPOS);
+    while(conn.getMovingState()){}
+    Sleep(1000);
+
+    //** sequenz one
+    conn.setPosition(SERVO_02, 8400);
+    conn.setPosition(SERVO_01, 4160);
+    while(conn.getMovingState()){}
+    Sleep(1000);
+    conn.setPosition(SERVO_03, 1984);
+    conn.setPosition(SERVO_02, 7560);
+    while(conn.getMovingState()){}
+    conn.setPosition(SERVO_04, 2600);
+    while(conn.getMovingState()){}
+    Sleep(1000);
+    conn.setPosition(SERVO_02, 9216);
+    conn.setPosition(SERVO_01, 8200);
+    while(conn.getMovingState()){}
+    Sleep(1000);
+    conn.setPosition(SERVO_02, 7560);
+    while(conn.getMovingState()){}
+    Sleep(1000);
+    conn.setPosition(SERVO_04, 3808);
+    while(conn.getMovingState()){}
+    Sleep(1000);
+    conn.setPosition(SERVO_02, ARM_MAXPOS);
+    while(conn.getMovingState()){}
+    conn.setPosition(SERVO_01, ARM_MIDPOS);
+    conn.setPosition(SERVO_03, ARM_MIDPOS);
+    while(conn.getMovingState()){}
+    conn.setPosition(SERVO_02, ARM_MIDPOS);
+
+    //** goodbey sequenz
+    conn.setPosition(SERVO_03, 9216);
+    while(conn.getMovingState()){}
+    conn.setSpeed(SERVO_04, 200);
+    conn.setAcceleration(SERVO_04, 100);
+    Sleep(1000);
+    // wave
+    for (int i = 0; i < 5; i++){
+        if (conn.getPosition(SERVO_04) <= GREIFER_MIDPOS){
+            conn.setPosition(SERVO_04, GREIFER_MAXPOS);
+            while(conn.getMovingState()){}
+        }else{
+            conn.setPosition(SERVO_04, GREIFER_MINPOS);
+            while(conn.getMovingState()){}
+        }
+    }
+    conn.setSpeed(SERVO_04, speed);
+    conn.setAcceleration(SERVO_04, acceleration);
+    conn.setPosition(SERVO_04, GREIFER_MIDPOS);
+    conn.setPosition(SERVO_03, ARM_MIDPOS);
+    while(conn.getMovingState()){}
+
+    // go into parking position
+    conn.setPosition(SERVO_02, ARM_MAXPOS);
+}
+
+
 int main()
 {
     //testOpenClose();
-    testSetGetMethoden();
+    //testSetGetMethoden();
+    testMEXMovement();
 }

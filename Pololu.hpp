@@ -9,6 +9,7 @@
 class IPololu {
 public:
     virtual bool setPosition(unsigned short servo, unsigned short goToPosition) = 0;
+    //virtual bool setMultiPosition((unsigned short...) value) = 0;
     virtual bool setSpeed(unsigned short servo, unsigned short goToSpeed) = 0;
     virtual bool setAcceleration(unsigned short servo, unsigned short goToAcceleration) = 0;
     virtual unsigned short getPosition(unsigned short servo) = 0;
@@ -33,6 +34,7 @@ public:
     bool closeConnection();
     /**< Servo faehrt eine neue Position an */
     bool setPosition(unsigned short servo, unsigned short goToPosition);
+    //bool setMultiPosition((unsigned short...) value);
     /**< Geschwindkeit fuer eine Servo wird gesetzt */
     bool setSpeed(unsigned short servo, unsigned short goToSpeed);
     /**< Beschleunigung fuer eine Servo wird gesetzt */

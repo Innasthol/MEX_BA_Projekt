@@ -145,26 +145,54 @@ void testSetGetMethoden () {
     }
 }
 
+/** \brief Function for testing the fully assembled MEX system.
+ *  WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING
+ *  WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING
+ *  WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING
+ *  WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING
+ *
+ *  This function may only be carried out on the MEX system under certain general conditions.
+ *
+ *  Settings for the servo motors in the Pololu Control Center:
+ *  Serial Settings:
+ *      Serial mode: USB Dual Port
+ *
+ *  Channelsettings:
+ *      NAME       | Min       | Max        | 8-bit neutral
+ *      SERVO_01   | 496       | 2304       | 1448
+ *      SERVO_02   | 496       | 2304       | 1448
+ *      SERVO_03   | 496       | 2304       | 1448
+ *      SERVO_04   | 496       | 1408       | 952
+ *
+ * Status: set the servo to following positions(parking position)
+ *      NAME       | Target
+ *      SERVO_01   | 1448
+ *      SERVO_02   | 2304
+ *      SERVO_03   | 1448
+ *      SERVO_04   | 952
+ *
+ */
 void testMEXMovement(){
     unsigned short speed = 30;
     unsigned short acceleration = 10;
     Pololu conn("COM5", 9600);
 
-    //** Open connection to COM port
+    /**< Open connection to COM port. */
     conn.openConnection();
 
-    //** Set speed and acceleration for all servos
+    /**< Set speed and acceleration for all servos */
     for (unsigned short i = 0; i < 4; i++){
         conn.setSpeed(i, speed);
         conn.setAcceleration(i, acceleration);
     }
 
-    //** leaving parking position
+    /**< leaving the parking position */
     conn.setPosition(SERVO_02, ARM_MIDPOS);
     while(conn.getMovingState()){}
     Sleep(1000);
 
-    //** sequenz one
+    /**< sequenz one */
+    // go in position for grabbing
     conn.setPosition(SERVO_02, 8400);
     conn.setPosition(SERVO_01, 4160);
     while(conn.getMovingState()){}
@@ -172,19 +200,24 @@ void testMEXMovement(){
     conn.setPosition(SERVO_03, 1984);
     conn.setPosition(SERVO_02, 7560);
     while(conn.getMovingState()){}
+    // grabbing the box
     conn.setPosition(SERVO_04, 2600);
     while(conn.getMovingState()){}
     Sleep(1000);
+    // liftig the box and moving to the right side
     conn.setPosition(SERVO_02, 9216);
     conn.setPosition(SERVO_01, 8200);
     while(conn.getMovingState()){}
     Sleep(1000);
+    // putting the box down
     conn.setPosition(SERVO_02, 7560);
     while(conn.getMovingState()){}
     Sleep(1000);
+    // release the box
     conn.setPosition(SERVO_04, 3808);
     while(conn.getMovingState()){}
     Sleep(1000);
+    // raise the arm and move it to the starting position
     conn.setPosition(SERVO_02, ARM_MAXPOS);
     while(conn.getMovingState()){}
     conn.setPosition(SERVO_01, ARM_MIDPOS);
@@ -192,13 +225,16 @@ void testMEXMovement(){
     while(conn.getMovingState()){}
     conn.setPosition(SERVO_02, ARM_MIDPOS);
 
-    //** goodbey sequenz
+    /**< goodbey sequenz */
+    // lifts the arm
     conn.setPosition(SERVO_03, 9216);
     while(conn.getMovingState()){}
+    // sets the speed of the grabber to a higher level
     conn.setSpeed(SERVO_04, 200);
+    // sets the acceleration of the grabber to a higher level
     conn.setAcceleration(SERVO_04, 100);
     Sleep(1000);
-    // wave
+    // waving with the grabber
     for (int i = 0; i < 5; i++){
         if (conn.getPosition(SERVO_04) <= GREIFER_MIDPOS){
             conn.setPosition(SERVO_04, GREIFER_MAXPOS);
@@ -208,13 +244,15 @@ void testMEXMovement(){
             while(conn.getMovingState()){}
         }
     }
+    // sets the speed and acceleration to the level at the beginning
     conn.setSpeed(SERVO_04, speed);
     conn.setAcceleration(SERVO_04, acceleration);
+    // moving to the starting position
     conn.setPosition(SERVO_04, GREIFER_MIDPOS);
     conn.setPosition(SERVO_03, ARM_MIDPOS);
     while(conn.getMovingState()){}
-
-    // go into parking position
+    // moving into parking position
+    // necessary, because the robot arm falls down due to its own weight when the power is switched off
     conn.setPosition(SERVO_02, ARM_MAXPOS);
 }
 
@@ -222,6 +260,8 @@ void testMEXMovement(){
 int main()
 {
     //testOpenClose();
+
     //testSetGetMethoden();
-    testMEXMovement();
+
+    //testMEXMovement();
 }

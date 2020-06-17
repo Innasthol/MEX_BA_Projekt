@@ -1,8 +1,17 @@
+//============================================================================
+// Name        : main.cpp
+// Author      : Willi Penner
+//
+// Description : Contains the main function. It also contains test functions
+//               to test the connection to the controller and the movement of
+//       		 the servos.
+//============================================================================
 #include "Pololu.hpp"
 #include <windows.h>
 #include <string>
 #include <iostream>
 
+// Define 12 possible servos for a Pololu Maestro 12.
 #define SERVO_01    0
 #define SERVO_02    1
 #define SERVO_03    2
@@ -15,14 +24,14 @@
 #define SERVO_10    9
 #define SERVO_11   10
 #define SERVO_12   11
+// Define constants for the minimum, maximum and middle position of a robot arm.
 #define ARM_MINPOS   1984
 #define ARM_MIDPOS   5792
 #define ARM_MAXPOS   9216
-#define GREIFER_MINPOS   1984
-#define GREIFER_MIDPOS   3808
-#define GREIFER_MAXPOS   5632
-
-
+// Define constants for the minimum, maximum and middle position of the robot gripper.
+#define GRIB_MINPOS   1984
+#define GRIB_MIDPOS   3808
+#define GRIB_MAXPOS   5632
 
 using namespace std;
 
@@ -103,7 +112,7 @@ void testSetGetMethoden () {
     unsigned short speed = 100;
     unsigned short acceleration = 10;
     unsigned short servo = SERVO_01;
-    Pololu conn("COM5", 9600);
+    Pololu conn("COM4", 9600);
     cout << "Create Pololu-Object: Object created." << endl;
 
     /** Testing to open a serial port */
@@ -236,11 +245,11 @@ void testMEXMovement(){
     Sleep(1000);
     // waving with the grabber
     for (int i = 0; i < 5; i++){
-        if (conn.getPosition(SERVO_04) <= GREIFER_MIDPOS){
-            conn.setPosition(SERVO_04, GREIFER_MAXPOS);
+        if (conn.getPosition(SERVO_04) <= GRIB_MIDPOS){
+            conn.setPosition(SERVO_04, GRIB_MAXPOS);
             while(conn.getMovingState()){}
         }else{
-            conn.setPosition(SERVO_04, GREIFER_MINPOS);
+            conn.setPosition(SERVO_04, GRIB_MINPOS);
             while(conn.getMovingState()){}
         }
     }
@@ -248,7 +257,7 @@ void testMEXMovement(){
     conn.setSpeed(SERVO_04, speed);
     conn.setAcceleration(SERVO_04, acceleration);
     // moving to the starting position
-    conn.setPosition(SERVO_04, GREIFER_MIDPOS);
+    conn.setPosition(SERVO_04, GRIB_MIDPOS);
     conn.setPosition(SERVO_03, ARM_MIDPOS);
     while(conn.getMovingState()){}
     // moving into parking position
@@ -261,7 +270,7 @@ int main()
 {
     //testOpenClose();
 
-    //testSetGetMethoden();
+    testSetGetMethoden();
 
     //testMEXMovement();
 }

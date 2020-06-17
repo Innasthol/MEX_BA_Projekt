@@ -1,3 +1,10 @@
+//============================================================================
+// Name        : SerialCom.cpp
+// Author      : Willi Penner
+//
+// Description : SerialCom source file. It contains the definition of the
+//               functions of the SerialCom class.
+//============================================================================
 #include "SerialCom.hpp"
 #include <stdio.h>
 #include <string>
@@ -16,8 +23,8 @@
  *  \param portName : The port name is used to open a serial connection via the port name for the controller specified by the operating system.
  *  \param baudRate : The baud rate determines the transmission speed at which communication between the PC and controller takes place.
  */
-SerialCom::SerialCom(){}
-SerialCom::SerialCom(const char* portName, unsigned short baudRate){portName_ = portName; baudRate_ = baudRate;}
+SerialCom::SerialCom(){port_ = NULL;}
+SerialCom::SerialCom(const char* portName, unsigned short baudRate){portName_ = portName; baudRate_ = baudRate; port_ = NULL;}
 
 /** \brief "initSerialCom" is used to initiate the SerialCom object with port name and baud rate.
  *  The function puts the object in the same state as the constructor with transfer parameters.

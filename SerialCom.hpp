@@ -1,3 +1,10 @@
+//============================================================================
+// Name        : SerialCom.hpp
+// Author      : Willi Penner
+//
+// Description : SerialCom header file. It contains the declaration of the
+//               ISerialCom interface and the SerialCom class
+//============================================================================
 #ifndef SERIALCOM_HPP_INCLUDED
 #define SERIALCOM_HPP_INCLUDED
 

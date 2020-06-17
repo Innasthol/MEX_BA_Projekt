@@ -1,12 +1,20 @@
+//============================================================================
+// Name        : Pololu.hpp
+// Author      : Willi Penner
+//
+// Description : Pololu source file. It contains the definition of the
+//               functions of the Pololu class.
+//============================================================================
 #include "Pololu.hpp"
 #include "SerialCom.hpp"
 #include <string>
 #include <iostream>
 
-/** \brief Pololu class constructor. Initializes the serial interface by calling initSerialCom of the SerialCom class.
+/** \brief Constructor executes serialCom.initSerialCom to initialize the serial connection. An object of the Pololu class must be
+ *  initialized with the port name and baud rate using the constructor.
  *
- * \param portName (COM-Portname: e.g. COM4)
- * \param baudRate
+ *  \param portName : The port name is used to open a serial connection via the port name for the controller specified by the operating system.
+ *  \param baudRate : The baud rate determines the transmission speed at which communication between the PC and controller takes place.
  *
  */
 Pololu::Pololu(const char* portName, unsigned short baudRate)
@@ -14,9 +22,10 @@ Pololu::Pololu(const char* portName, unsigned short baudRate)
     serialCom.initSerialCom(portName, baudRate);
 }
 
-/** \brief Opens a serial connection by calling the openSerialCom () function of the SerialCom class.
+/** \brief Function is used to open the serial connection. Function only calls
+ * the openSerialCom function of the serialCom object.
  *
- * \return
+ * \return The return value is 1 when opening the port was successful, 0 when an error occurred.
  *
  */
 bool Pololu::openConnection()
@@ -33,9 +42,10 @@ bool Pololu::openConnection()
     return 1;
 }
 
-/** \brief Closes a serial connection by calling closeSerialCom ().
+/** \brief Function is used to close the serial connection. Function only calls
+ * the closeSerialCom function of the serialCom object.
  *
- * \return
+ * \return The return value is 1 when closing the port was successful, 0 when an error occurred.
  *
  */
 bool Pololu::closeConnection()
@@ -52,22 +62,29 @@ bool Pololu::closeConnection()
     return 1;
 }
 
+/** \brief Used to change the connection data. Sets the serial connection in the same state as the constructor, but with a new port name and baud rate
+ *
+ *  \param portName : The port name is used to open a serial connection via the port name for the controller specified by the operating system.
+ *  \param baudRate : The baud rate determines the transmission speed at which communication between the PC and controller takes place.
+ *
+ */
 void Pololu::initConnection(const char* portName, unsigned short baudRate)
 {
     serialCom.initSerialCom(portName, baudRate);
 }
 
-/** \brief Moves servo to a assumed position.
+/** \brief Funktion is used to move a specific servo to a new position.
  *
- * \param servo = servo to address
- * \param goToPosition = Position that the selected servo should assume
- * \return The return value is 1 if writing was successfully, 0 if the was an error while writing
+ *  \param servo = Servo to move
+ *  \param goToPosition = New position to be approached. The value for the new position is calculated from the position in microseconds times 4 (e.g. new position should be 1500 microseconds, then 6000 must be set in the function as new position)
+ *
+ *  \return The return value of the function is 1 if the new position was successfully set and 0 if an error occurred.
  *
  */
 bool Pololu::setPosition(unsigned short servo, unsigned short goToPosition)
 {
     /* Generates the command for the controller.
-     * 0x84 = Command for setting the position
+     * 0x84 = Pololu command for setting the position
      * servo = servo to address as a transfer parameter
      * goToPositiion = divided into 2 bytes, first the low bits, then the high bits
      */
@@ -80,27 +97,28 @@ bool Pololu::setPosition(unsigned short servo, unsigned short goToPosition)
     catch(std::string errorMessage)
     {
         throw std::string("Pololu::setPosition: " + errorMessage);
-        return FALSE;
+        return 0;
     }
     catch(...)
     {
         throw std::string("Pololu::setPosition: Unknown error, while writing to port.");
-        return FALSE;
+        return 0;
     }
-    return TRUE;
+    return 1;
 }
 
-/** \brief Sets the speed at which the servo should turn.
+/** \brief Function is used to set the speed for a servo with which it should move.
  *
- * \param servo = servo to address
- * \param goToSpeed = Speed that the selected servo should assume
- * \return The return value is 1 if writing was successfully, 0 if the was an error while writing
+ *  \param servo = Servo to set speed
+ *  \param goToSpeed = Speed of the servo (speed value 1 = 0.25us / 10ms or speed value 100 = 25us / 10ms). A speed value of 0 means infinite speed, i.e. the maximum speed of the servo.
+ *
+ *  \return The return value of the function is 1 if the new speed was successfully set and 0 if an error occurred.
  *
  */
 bool Pololu::setSpeed(unsigned short servo, unsigned short goToSpeed)
 {
     /* Generates the command for the controller.
-     * 0x87 = Command for setting the speed
+     * 0x87 = Pololu command for setting the speed
      * servo = servo to address as a transfer parameter
      * goToSpeed = divided into 2 bytes, first the low bits, then the high bits
      */
@@ -123,17 +141,18 @@ bool Pololu::setSpeed(unsigned short servo, unsigned short goToSpeed)
     return TRUE;
 }
 
-/** \brief Sets the acceleration with which the servo reaches the set speed.
+/** \brief Function is used to set the acceleration for a servo with which it should reach the set speed.
  *
- * \param servo = servo to address
- * \param goToAcceleration = Acceleration that the selected servo should assume
- * \return The return value is 1 if writing was successfully, 0 if the was an error while writing
+ *  \param servo = Servo to set acceleration
+ *  \param goToAcceleration = Acceleration of the servo (acceleration value 1 = 0.25us / 10ms / 80ms or speed value 100 = 25us / 10ms / 80ms). A speed value of 0 means infinite acceleration, i.e. the maximum acceleration of the servo.
+ *
+ *  \return The return value of the function is 1 if the new acceleration was successfully set and 0 if an error occurred.
  *
  */
 bool Pololu::setAcceleration(unsigned short servo, unsigned short goToAcceleration)
 {
     /* Generates the command for the controller.
-     * 0x89 = Command for setting the acceleration
+     * 0x89 = Pololu command for setting the acceleration
      * servo = servo to address as a transfer parameter
      * goToAcceleration = divided into 2 bytes, first the low bits, then the high bits
      */
@@ -157,16 +176,17 @@ bool Pololu::setAcceleration(unsigned short servo, unsigned short goToAccelerati
     return TRUE;
 }
 
-/** \brief Determines the current position of a servo.
+/** \brief Function is used to read out the current position of a particular servo.
  *
- * \param servo = servo to address
- * \return The return value is the current position of the selected servo
+ * 	\param servo = Servo whose current position is to be read out.
+ *
+ *	\return The return value is the current position of the selected servo. The position value supplied by the controller must still be multiplied by 4.
  *
  */
 unsigned short Pololu::getPosition(unsigned short servo)
 {
     /* Generates the command for the controller.
-     * 0x90 = Command for reading out the position
+     * 0x90 = Pololu command for reading out the position
      * servo = servo to address as a transfer parameter
      */
     unsigned short sizeCommand = 2;
@@ -190,16 +210,15 @@ unsigned short Pololu::getPosition(unsigned short servo)
     return response[0] + 256 * response[1];
 }
 
-/** \brief Determines whether one of the connected servos is still in motion.
+/** \brief Function provides the movement status of all connected servos.
  *
- * \param servo = Suitable servo
- * \return The return value is 1 if a servo is still moving, 0 if there is no moving
+ *	\return The return value is 1 while a servo is still in motion and 0 when all servos are at a standstill.
  *
  */
 bool Pololu::getMovingState()
 {
     /* Generates the command for the controller.
-     * 0x93 = Command for reading out movements
+     * 0x93 = Pololu command for reading out the movement of all servos
      */
     unsigned short sizeCommand = 1;
     unsigned short sizeResponse = 1;

@@ -17,10 +17,7 @@
  *  \param baudRate : The baud rate determines the transmission speed at which communication between the PC and controller takes place.
  *
  */
-Pololu::Pololu(const char* portName, unsigned short baudRate)
-{
-    serialCom.initSerialCom(portName, baudRate);
-}
+Pololu::Pololu(const char* portName, unsigned short baudRate){serialCom.initSerialCom(portName, baudRate);}
 
 /** \brief Function is used to open the serial connection. Function only calls
  * the openSerialCom function of the serialCom object.
@@ -28,13 +25,12 @@ Pololu::Pololu(const char* portName, unsigned short baudRate)
  * \return The return value is 1 when opening the port was successful, 0 when an error occurred.
  *
  */
-bool Pololu::openConnection()
-{
+bool Pololu::openConnection(){
     try
     {
         serialCom.openSerialCom();
     }
-    catch(std::string errorMessage)
+    catch (std::string &errorMessage)
     {
         std::cout << errorMessage;
         return 0;
@@ -48,13 +44,12 @@ bool Pololu::openConnection()
  * \return The return value is 1 when closing the port was successful, 0 when an error occurred.
  *
  */
-bool Pololu::closeConnection()
-{
+bool Pololu::closeConnection(){
     try
     {
         serialCom.closeSerialCom();
     }
-    catch(std::string errorMessage)
+    catch (std::string &errorMessage)
     {
         std::cout << errorMessage;
         return 0;
@@ -68,10 +63,7 @@ bool Pololu::closeConnection()
  *  \param baudRate : The baud rate determines the transmission speed at which communication between the PC and controller takes place.
  *
  */
-void Pololu::initConnection(const char* portName, unsigned short baudRate)
-{
-    serialCom.initSerialCom(portName, baudRate);
-}
+void Pololu::initConnection(const char* portName, unsigned short baudRate){serialCom.initSerialCom(portName, baudRate);}
 
 /** \brief Funktion is used to move a specific servo to a new position.
  *
@@ -81,8 +73,7 @@ void Pololu::initConnection(const char* portName, unsigned short baudRate)
  *  \return The return value of the function is 1 if the new position was successfully set and 0 if an error occurred.
  *
  */
-bool Pololu::setPosition(unsigned short servo, unsigned short goToPosition)
-{
+bool Pololu::setPosition(unsigned short servo, unsigned short goToPosition){
     /* Generates the command for the controller.
      * 0x84 = Pololu command for setting the position
      * servo = servo to address as a transfer parameter
@@ -94,7 +85,7 @@ bool Pololu::setPosition(unsigned short servo, unsigned short goToPosition)
     {
         serialCom.writeSerialCom(command, sizeCommand, NULL, 0);
     }
-    catch(std::string errorMessage)
+    catch (std::string &errorMessage)
     {
         throw std::string("Pololu::setPosition: " + errorMessage);
         return 0;
@@ -115,8 +106,7 @@ bool Pololu::setPosition(unsigned short servo, unsigned short goToPosition)
  *  \return The return value of the function is 1 if the new speed was successfully set and 0 if an error occurred.
  *
  */
-bool Pololu::setSpeed(unsigned short servo, unsigned short goToSpeed)
-{
+bool Pololu::setSpeed(unsigned short servo, unsigned short goToSpeed){
     /* Generates the command for the controller.
      * 0x87 = Pololu command for setting the speed
      * servo = servo to address as a transfer parameter
@@ -128,7 +118,7 @@ bool Pololu::setSpeed(unsigned short servo, unsigned short goToSpeed)
     {
         serialCom.writeSerialCom(command, sizeCommand, NULL, 0);
     }
-    catch(std::string errorMessage)
+    catch (std::string &errorMessage)
     {
         throw std::string("Pololu::setSpeed: " + errorMessage);
         return FALSE;
@@ -149,8 +139,7 @@ bool Pololu::setSpeed(unsigned short servo, unsigned short goToSpeed)
  *  \return The return value of the function is 1 if the new acceleration was successfully set and 0 if an error occurred.
  *
  */
-bool Pololu::setAcceleration(unsigned short servo, unsigned short goToAcceleration)
-{
+bool Pololu::setAcceleration(unsigned short servo, unsigned short goToAcceleration){
     /* Generates the command for the controller.
      * 0x89 = Pololu command for setting the acceleration
      * servo = servo to address as a transfer parameter
@@ -163,7 +152,7 @@ bool Pololu::setAcceleration(unsigned short servo, unsigned short goToAccelerati
     {
         serialCom.writeSerialCom(command, sizeCommand, NULL, 0);
     }
-    catch(std::string errorMessage)
+    catch (std::string &errorMessage)
     {
         throw std::string("Pololu::setAcceleration: " + errorMessage);
         return FALSE;
@@ -183,8 +172,7 @@ bool Pololu::setAcceleration(unsigned short servo, unsigned short goToAccelerati
  *	\return The return value is the current position of the selected servo. The position value supplied by the controller must still be multiplied by 4.
  *
  */
-unsigned short Pololu::getPosition(unsigned short servo)
-{
+unsigned short Pololu::getPosition(unsigned short servo){
     /* Generates the command for the controller.
      * 0x90 = Pololu command for reading out the position
      * servo = servo to address as a transfer parameter
@@ -198,7 +186,7 @@ unsigned short Pololu::getPosition(unsigned short servo)
     {
         serialCom.writeSerialCom(command, sizeCommand, response, sizeResponse);
     }
-    catch(std::string errorMessage)
+    catch (std::string &errorMessage)
     {
         throw std::string("Pololu::getPosition: " + errorMessage);
     }
@@ -215,8 +203,7 @@ unsigned short Pololu::getPosition(unsigned short servo)
  *	\return The return value is 1 while a servo is still in motion and 0 when all servos are at a standstill.
  *
  */
-bool Pololu::getMovingState()
-{
+bool Pololu::getMovingState(){
     /* Generates the command for the controller.
      * 0x93 = Pololu command for reading out the movement of all servos
      */
@@ -229,7 +216,7 @@ bool Pololu::getMovingState()
     {
         serialCom.writeSerialCom(command, sizeCommand, response, sizeResponse);
     }
-    catch(std::string errorMessage)
+    catch (std::string &errorMessage)
     {
         throw std::string("Pololu::getMovingState: " + errorMessage);
     }

@@ -123,35 +123,39 @@ void testSetGetMethoden () {
 
     /** Testing to set speed and acceleration to a servo */
     if (conn.setSpeed(servo, speed)){
-        cout << "Set speed of Servo " << servo << " to " << speed << " (" << speed*0.25/10 << " us/ms): Successfully" << endl;
+        cout << "Set speed of Servo " << servo+1 << " to " << speed << " (" << speed*0.25/10 << " us/ms): Successfully" << endl;
     }else{
-        cout << "Set speed of Servo " << servo << " to " << speed << " (" << speed*0.25/10 << " us/ms): Failed" << endl;
+        cout << "Set speed of Servo " << servo+1 << " to " << speed << " (" << speed*0.25/10 << " us/ms): Failed" << endl;
     }
     if (conn.setAcceleration(servo, acceleration)){
-        cout << "Set acceleration of Servo " << servo << " to " << acceleration << " (" << acceleration*0.25/10/80 << " us/(ms)^2): Successfully" << endl;
+        cout << "Set acceleration of Servo " << servo+1 << " to " << acceleration << " (" << acceleration*0.25/10/80 << " us/(ms)^2): Successfully" << endl;
     }else{
-        cout << "Set acceleration of Servo " << servo << " to " << acceleration << " (" << acceleration*0.25/10/80 << " us/(ms)^2): Failed" << endl;
+        cout << "Set acceleration of Servo " << servo+1 << " to " << acceleration << " (" << acceleration*0.25/10/80 << " us/(ms)^2): Failed" << endl;
     }
 
     /** Testing to read the current position of the servo */
-    cout << "Current position of servo " << servo << " is " << conn.getPosition(servo) << endl;
+    cout << "Current position of servo " << servo+1 << " is " << conn.getPosition(servo) << endl;
 
     /** Test the setting of different positions for a servo and check whether a servo is still in motion */
     for (int i = 0; i < 5; i++){
         if (conn.getPosition(servo) < ARM_MIDPOS){
             cout << i << ". Servo " << servo+1 << " goes to position " << ARM_MAXPOS << endl;
             conn.setPosition(servo, ARM_MAXPOS);
-            while(conn.getMovingState()){
-                //cout << "waiting" << endl;
-            }
+            while(conn.getMovingState()){}
         }else{
             cout << i << ". Servo " << servo+1 << " goes to position " << ARM_MINPOS << endl;
             conn.setPosition(servo, ARM_MINPOS);
-            while(conn.getMovingState()){
-                //cout << "waiting" << endl;
-            }
+            while(conn.getMovingState()){}
         }
     }
+
+    /** Testing to change the speed while servo is moving */
+    conn.setPosition(servo, ARM_MIDPOS);
+    while(conn.getMovingState()){}
+    conn.setSpeed(servo, 5);
+    conn.setPosition(servo, ARM_MAXPOS);
+    Sleep(1000);
+    conn.setSpeed(servo, 200);
 }
 
 /** \brief Function for testing the fully assembled MEX system.

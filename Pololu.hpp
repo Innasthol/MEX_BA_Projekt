@@ -16,6 +16,7 @@
  */
 class IPololu {
 public:
+	virtual ~IPololu(){};
     virtual bool setPosition(unsigned short servo, unsigned short goToPosition) = 0;
     virtual bool setSpeed(unsigned short servo, unsigned short goToSpeed) = 0;
     virtual bool setAcceleration(unsigned short servo, unsigned short goToAcceleration) = 0;

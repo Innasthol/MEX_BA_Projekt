@@ -20,6 +20,7 @@
  */
 class ISerialCom {
 public:
+	virtual ~ISerialCom(){};
     virtual void initSerialCom(const char* portName, unsigned short baudRate) = 0;
     virtual bool openSerialCom() = 0;
     virtual bool closeSerialCom() = 0;

@@ -11,7 +11,7 @@
 #ifdef _WIN32
     #include <windows.h>
 #else
-
+	#include <iostream>
 #endif
 
 /** \brief Interface for a serial connection via a COM port

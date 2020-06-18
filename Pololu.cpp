@@ -121,14 +121,14 @@ bool Pololu::setSpeed(unsigned short servo, unsigned short goToSpeed){
     catch (std::string &errorMessage)
     {
         throw std::string("Pololu::setSpeed: " + errorMessage);
-        return FALSE;
+        return 0;
     }
     catch(...)
     {
         throw std::string("Pololu::setSpeed: Unknown error, while writing to port.");
-        return FALSE;
+        return 0;
     }
-    return TRUE;
+    return 1;
 }
 
 /** \brief Function is used to set the acceleration for a servo with which it should reach the set speed.
@@ -155,14 +155,14 @@ bool Pololu::setAcceleration(unsigned short servo, unsigned short goToAccelerati
     catch (std::string &errorMessage)
     {
         throw std::string("Pololu::setAcceleration: " + errorMessage);
-        return FALSE;
+        return 0;
     }
     catch(...)
     {
         throw std::string("Pololu::setAcceleration: Unknown error, while writing to port.");
-        return FALSE;
+        return 0;
     }
-    return TRUE;
+    return 1;
 }
 
 /** \brief Function is used to read out the current position of a particular servo.

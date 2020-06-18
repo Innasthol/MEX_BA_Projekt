@@ -7,9 +7,14 @@
 //       		 the servos.
 //============================================================================
 #include "Pololu.hpp"
-#include <windows.h>
 #include <string>
 #include <iostream>
+
+#ifdef _WIN32
+    #include <windows.h>
+#else
+	#include <unistd.h>
+#endif
 
 // Define 12 possible servos for a Pololu Maestro 12.
 #define SERVO_01    0
@@ -35,13 +40,21 @@
 
 using namespace std;
 
+void wait(unsigned long milliseconds){
+	#ifdef _WIN32
+		Sleep(milliseconds);
+	#else
+		usleep(milliseconds);
+	#endif
+}
+
 /** \brief Function systematically tests the opening and closing of a serial connection
  *
  */
 void testOpenClose (){
     //Define the port name and the baud rate
-    const char* portName = "COM4";  // Windows, "\\\\.\\COM6" also works
-    //const char* portName = "/dev/ttyACM0";  // Linux
+    //const char* portName = "COM4";  // Windows
+    const char* portName = "/dev/ttyACM0";  // Linux
     unsigned short baudRate = 9600;
     //Define a Pololu object
     Pololu conn(portName, baudRate);
@@ -154,7 +167,7 @@ void testSetGetMethoden () {
     while(conn.getMovingState()){}
     conn.setSpeed(servo, 5);
     conn.setPosition(servo, ARM_MAXPOS);
-    Sleep(1000);
+    wait(1000);
     conn.setSpeed(servo, 200);
 }
 
@@ -202,34 +215,34 @@ void testMEXMovement(){
     /**< leaving the parking position */
     conn.setPosition(SERVO_02, ARM_MIDPOS);
     while(conn.getMovingState()){}
-    Sleep(1000);
+    wait(1000);
 
     /**< sequenz one */
     // go in position for grabbing
     conn.setPosition(SERVO_02, 8400);
     conn.setPosition(SERVO_01, 4160);
     while(conn.getMovingState()){}
-    Sleep(1000);
+    wait(1000);
     conn.setPosition(SERVO_03, 1984);
     conn.setPosition(SERVO_02, 7560);
     while(conn.getMovingState()){}
     // grabbing the box
     conn.setPosition(SERVO_04, 2600);
     while(conn.getMovingState()){}
-    Sleep(1000);
+    wait(1000);
     // liftig the box and moving to the right side
     conn.setPosition(SERVO_02, 9216);
     conn.setPosition(SERVO_01, 8200);
     while(conn.getMovingState()){}
-    Sleep(1000);
+    wait(1000);
     // putting the box down
     conn.setPosition(SERVO_02, 7560);
     while(conn.getMovingState()){}
-    Sleep(1000);
+    wait(1000);
     // release the box
     conn.setPosition(SERVO_04, 3808);
     while(conn.getMovingState()){}
-    Sleep(1000);
+    wait(1000);
     // raise the arm and move it to the starting position
     conn.setPosition(SERVO_02, ARM_MAXPOS);
     while(conn.getMovingState()){}
@@ -246,7 +259,7 @@ void testMEXMovement(){
     conn.setSpeed(SERVO_04, 200);
     // sets the acceleration of the grabber to a higher level
     conn.setAcceleration(SERVO_04, 100);
-    Sleep(1000);
+    wait(1000);
     // waving with the grabber
     for (int i = 0; i < 5; i++){
         if (conn.getPosition(SERVO_04) <= GRIB_MIDPOS){
@@ -272,9 +285,9 @@ void testMEXMovement(){
 
 int main()
 {
-    //testOpenClose();
+    testOpenClose();
 
-    testSetGetMethoden();
+    //testSetGetMethoden();
 
     //testMEXMovement();
 }

@@ -13,7 +13,11 @@
 #ifdef _WIN32
     #include <windows.h>
 #else
-
+	#include <fcntl.h>
+	#include <unistd.h>
+	#include <stdint.h>
+	#include <termios.h>
+	#include <stdbool.h>
 #endif
 
 /** \brief Constructors: A constructor without transfer parameters, so that when used in the Pololu class
@@ -23,8 +27,22 @@
  *  \param portName : The port name is used to open a serial connection via the port name for the controller specified by the operating system.
  *  \param baudRate : The baud rate determines the transmission speed at which communication between the PC and controller takes place.
  */
-SerialCom::SerialCom(){port_ = NULL;}
-SerialCom::SerialCom(const char* portName, unsigned short baudRate){portName_ = portName; baudRate_ = baudRate; port_ = NULL;}
+SerialCom::SerialCom(){
+	#ifdef _WIN32
+		port_ = NULL;
+	#else
+		port_ = 0;
+	#endif
+}
+SerialCom::SerialCom(const char* portName, unsigned short baudRate){
+	portName_ = portName;
+	baudRate_ = baudRate;
+	#ifdef _WIN32
+		port_ = NULL;
+	#else
+		port_ = 0;
+	#endif
+}
 
 /** \brief "initSerialCom" is used to initiate the SerialCom object with port name and baud rate.
  *  The function puts the object in the same state as the constructor with transfer parameters.
@@ -107,7 +125,54 @@ bool SerialCom::openSerialCom(){
         }
         return 1;
     #else
+        bool success = false;
 
+        /**< If there is still an open connection, it will be closed before opening it again. */
+        close(port_);
+        /**< Opens a serial connection using the CreateFileA function from <windows.h>. Port_ is
+             opened with read and write access. */
+        port_ = open(portName_, O_RDWR | O_NOCTTY);
+        if (port_ == -1){
+        	throw std::string("SerialCom::openSerialCom: Failed to open port.\n");
+            return 0;
+        }
+        /**< Flushes the file buffer of the opened connection. */
+        success = tcflush(port_, TCIOFLUSH);
+        if (success){
+        	throw std::string("SerialCom::openSerialCom: Failed to flush file buffer.\n");
+        	close(port_);
+        	return 0;
+        }
+        // Get the current configuration of the serial port.
+        struct termios options;
+        success = tcgetattr(port_, &options);
+        if (success){
+        	throw std::string("SerialCom::openSerialCom: Failed to get serial settings.\n");
+            close(port_);
+            return 0;
+        }
+        // Turn off any options that might interfere with our ability to send and
+        // receive raw binary bytes.
+        options.c_iflag &= ~(INLCR | IGNCR | ICRNL | IXON | IXOFF);
+        options.c_oflag &= ~(ONLCR | OCRNL);
+        options.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+
+        // Set up timeouts: Calls to read() will return as soon as there is
+        // at least one byte available or when 100 ms has passed.
+        options.c_cc[VTIME] = 1;
+        options.c_cc[VMIN] = 0;
+
+        // This code only supports certain standard baud rates. Supporting
+        // non-standard baud rates should be possible but takes more work.
+        cfsetospeed(&options, B9600);
+        cfsetispeed(&options, cfgetospeed(&options));
+        success = tcsetattr(port_, TCSANOW, &options);
+        if (success){
+        	throw std::string("SerialCom::openSerialCom: Failed to set serial settings.\n");
+            close(port_);
+            return 0;
+        }
+        return 1;
     #endif
 }
 
@@ -123,7 +188,8 @@ bool SerialCom::closeSerialCom(){
         }
         return 1;
     #else
-
+        close(port_);
+        return 1;
     #endif
 }
 
@@ -164,7 +230,7 @@ bool SerialCom::writeSerialCom(unsigned char command[], unsigned short sizeComma
         }
         return TRUE; //Confirmation that data was written and read data were saved in the response array.
     #else
-
+        return 1;
     #endif
 }
 

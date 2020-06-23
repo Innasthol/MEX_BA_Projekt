@@ -42,6 +42,11 @@
 
 using namespace std;
 
+/** \brief The function is used for waiting for a certain time, depending on the operating system Sleep () or usleep () is used.
+ *
+ *	\param milliseconds = Time to wait in milliseconds
+ *
+ */
 void wait(unsigned long milliseconds){
 	#ifdef _WIN32
 		Sleep(milliseconds);
@@ -55,7 +60,7 @@ void wait(unsigned long milliseconds){
  */
 void testOpenClose (){
     //Define the port name and the baud rate
-    //const char* portName = "COM4";  // Windows
+    //const char* portName = "COM4";  		// Windows
     const char* portName = "/dev/ttyACM0";  // Linux
     unsigned short baudRate = 9600;
     //Define a Pololu object
@@ -127,8 +132,8 @@ void testSetGetMethoden () {
     unsigned short speed = 100;
     unsigned short acceleration = 10;
     unsigned short servo = SERVO_04;
-    //Pololu conn("COM4", 9600);  //Windows
-    Pololu conn("/dev/ttyACM0", 9600);  // Linux
+    //Pololu conn("COM4", 9600);  			//Windows
+    Pololu conn("/dev/ttyACM0", 9600);  	// Linux
     cout << "Create Pololu-Object: Object created." << endl;
 
     /** Testing to open a serial port */
@@ -150,16 +155,16 @@ void testSetGetMethoden () {
     }
 
     /** Testing to read the current position of the servo */
-    cout << "Current position of servo " << servo+1 << " is " << conn.getPosition(servo) << endl;
+    cout << "Current position of servo " << servo+1 << " is " << conn.getPosition(servo) << " (" << PosToRad(conn.getPosition(servo)) << " radiant, " << PosToDeg(conn.getPosition(servo)) << " degree)" << endl;
 
     /** Test the setting of different positions for a servo and check whether a servo is still in motion */
     for (int i = 0; i < 5; i++){
         if (conn.getPosition(servo) < ARM_MIDPOS){
-            cout << i << ". Servo " << servo+1 << " goes to position " << ARM_MAXPOS << endl;
+            cout << i << ". Servo " << servo+1 << " goes to position " << ARM_MAXPOS << " (" << PosToRad(ARM_MAXPOS) << " radiant, " << PosToDeg(ARM_MAXPOS) << " degree)" << endl;
             conn.setPosition(servo, ARM_MAXPOS);
             while(conn.getMovingState()){}
         }else{
-            cout << i << ". Servo " << servo+1 << " goes to position " << ARM_MINPOS << endl;
+            cout << i << ". Servo " << servo+1 << " goes to position " << ARM_MINPOS << " (" << PosToRad(ARM_MINPOS) << " radiant, " << PosToDeg(ARM_MINPOS) << " degree)" << endl;
             conn.setPosition(servo, ARM_MINPOS);
             while(conn.getMovingState()){}
         }
@@ -205,7 +210,8 @@ void testSetGetMethoden () {
 void testMEXMovement(){
     unsigned short speed = 30;
     unsigned short acceleration = 10;
-    Pololu conn("COM5", 9600);
+    //Pololu conn("COM5", 9600);   			// Windows
+    Pololu conn("/dev/ttyACM2", 9600);		// Linux
 
     /**< Open connection to COM port. */
     conn.openConnection();
@@ -250,10 +256,10 @@ void testMEXMovement(){
     // raise the arm and move it to the starting position
     conn.setPosition(SERVO_02, ARM_MAXPOS);
     while(conn.getMovingState()){}
-    conn.setPosition(SERVO_01, ARM_MIDPOS);
-    conn.setPosition(SERVO_03, ARM_MIDPOS);
+    conn.setPosition(SERVO_01, 5792);
+    conn.setPosition(SERVO_03, 5792);
     while(conn.getMovingState()){}
-    conn.setPosition(SERVO_02, ARM_MIDPOS);
+    conn.setPosition(SERVO_02, 5792);
 
     /**< goodbey sequenz */
     // lifts the arm
@@ -279,7 +285,7 @@ void testMEXMovement(){
     conn.setAcceleration(SERVO_04, acceleration);
     // moving to the starting position
     conn.setPosition(SERVO_04, GRIB_MIDPOS);
-    conn.setPosition(SERVO_03, ARM_MIDPOS);
+    conn.setPosition(SERVO_03, 5792);
     while(conn.getMovingState()){}
     // moving into parking position
     // necessary, because the robot arm falls down due to its own weight when the power is switched off
@@ -305,9 +311,9 @@ int main()
 {
     //testOpenClose();
 
-    //testSetGetMethoden();
+    testSetGetMethoden();
 
     //testMEXMovement();
 
-	testConversion();
+	//testConversion();
 }

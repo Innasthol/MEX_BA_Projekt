@@ -131,7 +131,7 @@ bool SerialCom::openSerialCom(){
         close(port_);
         /**< Opens a serial connection using the CreateFileA function from <windows.h>. Port_ is
              opened with read and write access. */
-        port_ = open(portName_, O_RDWR | O_NOCTTY);
+        port_ = open(portName_, O_RDWR | O_NOCTTY); //you have to set the permission for the /dev/ttyACM0
         if (port_ == -1){
         	throw std::string("SerialCom::openSerialCom: Failed to open port.\n");
             return 0;
@@ -203,33 +203,49 @@ bool SerialCom::closeSerialCom(){
  * \return Returns TRUE on successful writing to a serial connection, otherwise it returns FALSE.
  */
 bool SerialCom::writeSerialCom(unsigned char command[], unsigned short sizeCommand, unsigned char *response, unsigned short sizeResponse){
-    #ifdef _WIN32
+	//** Check the length of the command */
+	if ((sizeCommand != 1) && (sizeCommand != 2) && (sizeCommand != 4)){
+		throw std::string("SerialCom::writeSerialCom: wrong parameter sizeCommand, allowed parameter 1,2 or 4.");
+	}
+
+	#ifdef _WIN32
         DWORD bytesTrasfered; //Is given to the write or read command as a pointer. After executing the WriteFile or ReadFile, bytesTranfered contains the number of bytes transmitted or received.
         bool success = 0;
-
-        //** Check the length of the command */
-        if ((sizeCommand != 1) && (sizeCommand != 2) && (sizeCommand != 4)){
-            throw std::string("SerialCom::writeSerialCom: wrong parameter sizeCommand, allowed parameter 1,2 or 4.");
-        }
 
         //** Sending the command to the controller via port_. */
         success = WriteFile(port_, command, sizeCommand, &bytesTrasfered, NULL);
         if (!success){
             throw std::string("SerialCom::writeSerialCom: Failed to write to port.");
-            return FALSE;
+            return 0;
         }
 
         //** Check whether data needs to be read. */
         if (sizeResponse > 0){
             success = ReadFile(port_, (void *)response, sizeResponse, &bytesTrasfered, NULL);
         }else{
-            return TRUE; //No need to read data. Confirmation of the successful writing of the data.
+            return 1; //No need to read data. Confirmation of the successful writing of the data.
         }
         if (!success){
             throw std::string("SerialCom::writeSerialCom: Failed to read from port.");
+            return 0;
         }
-        return TRUE; //Confirmation that data was written and read data were saved in the response array.
+        return 1; //Confirmation that data was written and read data were saved in the response array.
     #else
+        //** Sending the command to the controller via port_. */
+        if(write(port_, command, sizeCommand) == -1){
+        	throw std::string("SerialCom::writeSerialCom: Failed to write to port.");
+            return 0;
+        }
+        //** Check whether data needs to be read. */
+        if (sizeResponse > 0){
+        	if(read(port_, (void *)response, sizeResponse) != sizeResponse)
+        	{
+        		throw std::string("SerialCom::writeSerialCom: Failed to read from port.");
+        		return 0;
+        	}
+        }else{
+        	return 1;
+        }
         return 1;
     #endif
 }

@@ -7,8 +7,10 @@
 //       		 the servos.
 //============================================================================
 #include "Pololu.hpp"
+#include "Convert.hpp"
 #include <string>
 #include <iostream>
+#include <cmath>
 
 #ifdef _WIN32
     #include <windows.h>
@@ -30,9 +32,9 @@
 #define SERVO_11   10
 #define SERVO_12   11
 // Define constants for the minimum, maximum and middle position of a robot arm.
-#define ARM_MINPOS   1984
-#define ARM_MIDPOS   5792
-#define ARM_MAXPOS   9216
+#define ARM_MINPOS   2400
+#define ARM_MIDPOS   6000
+#define ARM_MAXPOS   9600
 // Define constants for the minimum, maximum and middle position of the robot gripper.
 #define GRIB_MINPOS   1984
 #define GRIB_MIDPOS   3808
@@ -124,8 +126,9 @@ void testOpenClose (){
 void testSetGetMethoden () {
     unsigned short speed = 100;
     unsigned short acceleration = 10;
-    unsigned short servo = SERVO_01;
-    Pololu conn("COM4", 9600);
+    unsigned short servo = SERVO_04;
+    //Pololu conn("COM4", 9600);  //Windows
+    Pololu conn("/dev/ttyACM0", 9600);  // Linux
     cout << "Create Pololu-Object: Object created." << endl;
 
     /** Testing to open a serial port */
@@ -169,6 +172,7 @@ void testSetGetMethoden () {
     conn.setPosition(servo, ARM_MAXPOS);
     wait(1000);
     conn.setSpeed(servo, 200);
+    conn.setPosition(servo, ARM_MIDPOS);
 }
 
 /** \brief Function for testing the fully assembled MEX system.
@@ -282,12 +286,28 @@ void testMEXMovement(){
     conn.setPosition(SERVO_02, ARM_MAXPOS);
 }
 
+void testConversion (){
+	std::cout << "Input: 0 rad = " << RadToPos(0) << std::endl;
+	std::cout << "Input: +PI/2 rad = " << RadToPos(M_PI/2) << std::endl;
+	std::cout << "Input: -PI/2 rad = " << RadToPos(-M_PI/2) << std::endl;
+	std::cout << "Input: 0 deg = " << DegToPos(0) << std::endl;
+	std::cout << "Input: 90 deg = " << DegToPos(90) << std::endl;
+	std::cout << "Input: -90 deg = " << DegToPos(-90) << std::endl;
+	std::cout << "Input: 6000 = " << PosToRad(6000) << std::endl;
+	std::cout << "Input: 6000 = " << PosToDeg(6000) << std::endl;
+	std::cout << "Input: 2400 = " << PosToRad(2400) << std::endl;
+	std::cout << "Input: 2400 = " << PosToDeg(2400) << std::endl;
+	std::cout << "Input: 9600 = " << PosToRad(9600) << std::endl;
+	std::cout << "Input: 9600 = " << PosToDeg(9600) << std::endl;
+}
 
 int main()
 {
-    testOpenClose();
+    //testOpenClose();
 
     //testSetGetMethoden();
 
     //testMEXMovement();
+
+	testConversion();
 }

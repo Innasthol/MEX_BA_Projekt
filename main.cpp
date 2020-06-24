@@ -60,9 +60,12 @@ void wait(unsigned long milliseconds){
  */
 void testOpenClose (){
     //Define the port name and the baud rate
-    //const char* portName = "COM4";  		// Windows
-    const char* portName = "/dev/ttyACM0";  // Linux
-    unsigned short baudRate = 9600;
+	#ifdef _WIN32
+		const char* portName = "COM4";  		// Windows
+	#else
+		const char* portName = "/dev/ttyACM0";  // Linux
+	#endif
+	unsigned short baudRate = 9600;
     //Define a Pololu object
     Pololu conn(portName, baudRate);
 
@@ -132,8 +135,11 @@ void testSetGetMethoden () {
     unsigned short speed = 100;
     unsigned short acceleration = 10;
     unsigned short servo = SERVO_04;
-    //Pololu conn("COM4", 9600);  			//Windows
-    Pololu conn("/dev/ttyACM0", 9600);  	// Linux
+	#ifdef _WIN32
+    	Pololu conn("COM4", 9600);     // Windows
+	#else
+    	Pololu conn("/dev/ttyACM0", 9600);  	// Linux
+	#endif
     cout << "Create Pololu-Object: Object created." << endl;
 
     /** Testing to open a serial port */

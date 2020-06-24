@@ -194,16 +194,16 @@ void testSetGetMethoden () {
  *
  *  Channelsettings:
  *      NAME       | Min       | Max        | 8-bit neutral
- *      SERVO_01   | 496       | 2304       | 1448
- *      SERVO_02   | 496       | 2304       | 1448
- *      SERVO_03   | 496       | 2304       | 1448
- *      SERVO_04   | 496       | 1408       | 952
+ *      SERVO_01   | 592       | 2400       | 1500
+ *      SERVO_02   | 592       | 2400       | 1500
+ *      SERVO_03   | 592       | 2400       | 1500
+ *      SERVO_04   | 592       | 1500       | 952
  *
  * Status: set the servo to following positions(parking position)
  *      NAME       | Target
- *      SERVO_01   | 1448
- *      SERVO_02   | 2304
- *      SERVO_03   | 1448
+ *      SERVO_01   | 1500
+ *      SERVO_02   | 2400
+ *      SERVO_03   | 1500
  *      SERVO_04   | 952
  *
  */
@@ -309,7 +309,7 @@ void testConversion (){
 
 int main()
 {
-    //testOpenClose();
+    testOpenClose();
 
     testSetGetMethoden();
 

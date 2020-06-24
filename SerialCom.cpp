@@ -182,14 +182,13 @@ bool SerialCom::openSerialCom(){
  */
 bool SerialCom::closeSerialCom(){
     #ifdef _WIN32
-        if (CloseHandle(port_) == 0){
-        	throw std::string("SerialCom::closeSerialCom: Failed to close port.\n");
-        	return 0;
-        }
-        return 1;
+		if (CloseHandle(port_) == 0){
+			throw std::string("SerialCom::closeSerialCom: Failed to close port.\n");
+		    return 0;
+		}
+		return 1;
     #else
-        close(port_);
-        return 1;
+		return close(port_);
     #endif
 }
 

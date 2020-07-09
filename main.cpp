@@ -15,7 +15,6 @@ int main()
 
 	//testSetGetMethods();
 
-	//testMEXMovementSetting1();
+	testMEXMovementSetting1();
     //testMEXMovementSetting2();
-	testMEXMovementSetting3();
 }

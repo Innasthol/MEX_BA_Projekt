@@ -6,6 +6,7 @@
 //               ServoMotor with its functions to control a specific servo.
 //============================================================================
 #include "Pololu.hpp"
+#include <cmath>
 
 #ifndef SERVOMOTOR_HPP_
 #define SERVOMOTOR_HPP_
@@ -29,7 +30,7 @@ public:
 	virtual unsigned short getPositionInAbs() = 0;
 	virtual short getPositionInDeg() = 0;
 	virtual float getPositionInRad() = 0;
-	virtual void showPololuValues () = 0;
+	virtual void showPololuValues (unsigned short& min, unsigned short& mid, unsigned short& max) = 0;
 };
 
 /** \brief Class for the ServoMotor object
@@ -41,8 +42,16 @@ public:
  */
 class ServoMotor : public IServoMotor{
 private:
+	const short maxDeg = 90;				//maximum degree allowed
+	const float maxRad = M_PI/2;			//maximum radiant allowed, M_PI is the constant from <cmath> for the number Pi
+	const short maxSpeed = 255;				//maximum value for the speed
+	const short maxAcceleration = 255;      //maximum value for the acceleration
+	const short minSpeed = 1;				//minimum value for the speed
+	const short minAcceleration = 1;  //minimum value for the acceleration
+	const short conFactorDegToPos = 10;	    //conversion factor from degrees to position
+	const short conFactorMyToPos = 4;		//conversion factor to convert µs (position value of a servo) to position values
 	unsigned short servoNumber_;
-	unsigned short startingPosition_;
+	unsigned short startingPosition_;	//startPosition is the center position of a servo, in most cases it is value of 6000 (1500µs * 4)
 	unsigned short delta_;
 	Pololu *connection_ = NULL;
 public:
@@ -151,7 +160,7 @@ public:
 	/** \brief Shows which settings have to be made in the Pololu Maestro Control Center for the servo,
 	 *  based on the starting position and the delta for the specific servo.
 	 */
-	void showPololuValues ();
+	void showPololuValues (unsigned short& min, unsigned short& mid, unsigned short& max);
 };
 
 #endif /* SERVOMOTOR_HPP_ */

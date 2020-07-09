@@ -28,6 +28,8 @@
  *  \param baudRate : The baud rate determines the transmission speed at which communication between the PC and controller takes place.
  */
 SerialCom::SerialCom(){
+	portName_ = "";
+	baudRate_ = 0;
 	#ifdef _WIN32
 		port_ = NULL;
 	#else
@@ -56,7 +58,7 @@ void SerialCom::initSerialCom(const char* portName, unsigned short baudRate){
     #ifdef _WIN32
         CloseHandle(port_);
     #else
-
+        close(port_);
     #endif
     portName_ = portName;
     baudRate_ = baudRate;

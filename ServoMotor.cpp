@@ -83,10 +83,10 @@ bool ServoMotor::setPositionInAbs(unsigned short newPosition){
  *  \return The return value is the return value of the setPosition funktion of the Pololu object.
  */
 bool ServoMotor::setPositionInDeg(short newPosition){
-	if (newPosition > 90 || newPosition < -90){
+	if (newPosition > maxDeg || newPosition < -maxDeg){
 		throw std::string("ServoMotor::setPositionInDeg: Degree is out of range (-90 - 90).");
 	}else{
-		return connection_->setPosition(servoNumber_, startingPosition_ + newPosition * 10 * 4);
+		return connection_->setPosition(servoNumber_, startingPosition_ + newPosition * conFactorDegToPos * conFactorMyToPos);
 	}
 }
 
@@ -97,38 +97,40 @@ bool ServoMotor::setPositionInDeg(short newPosition){
  *  \return The return value is the return value of the setPosition funktion of the Pololu object.
  */
 bool ServoMotor::setPositionInRad(float newPosition){
-	if ((int)(100 * newPosition) > (int)(100 * (M_PI/2)) || (int)(100 * newPosition) < (int)(100 * (-M_PI/2))){
+	// Since float numbers cannot be compared, the radians are converted to an int. The factor 100 sets the accuracy to 2 digits after the decimal point.
+	if ((int)(100 * newPosition) > (int)(100 * (maxRad)) || (int)(100 * newPosition) < (int)(100 * (-maxRad))){
 		throw std::string("ServoMotor::setPositionInRad: Radiant is out of range (-PI/2 - +PI/2).");
 	}else{
-		return connection_->setPosition(servoNumber_, (startingPosition_ + (newPosition * 180 / M_PI) * 10 * 4));
+		// first the neu radiant position is converted to degree (newPosition * 180 / M_PI)
+		return connection_->setPosition(servoNumber_, (startingPosition_ + (newPosition * 180 / M_PI) * conFactorDegToPos * conFactorMyToPos));
 	}
 }
 
-/** \brief Sets the speed at which the servo should move (speed range is between 0 and 255)
+/** \brief Sets the speed at which the servo should move (speed range is between 1 and 255)
  *
- *  \param newSpeed = Speed value (0 stands for the maximum speed of the servo, 1 is (0.25 microseconds) / (10 milliseconds),
+ *  \param newSpeed = Speed value (1 is (0.25 microseconds) / (10 milliseconds),
  *  255 is (63,75 microseconds) / (10 milliseconds))
  *
  *  \return The return value is the return value of the setSpeed funktion of the Pololu object.
  */
 bool ServoMotor::setSpeed(unsigned short newSpeed){
-	if (newSpeed > 255 || newSpeed < 0){
-		throw std::string("ServoMotor::setSpeed: Speed is out of range (0 - 255).");
+	if (newSpeed > maxSpeed || newSpeed < minSpeed){
+		throw std::string("ServoMotor::setSpeed: Speed is out of range (1 - 255).");
 	}else{
 		return connection_->setSpeed(servoNumber_, newSpeed);
 	}
 }
 
-/** \brief Sets the acceleration with which the set speed should be reached (acceleration range is between 0 and 255)
+/** \brief Sets the acceleration with which the set speed should be reached (acceleration range is between 1 and 255)
  *
- *  \param newAcceleration = Acceleration value (0 stands for the maximum acceleration of the servo, 1 is (0.25 microseconds) / (10 milliseconds) / (80 milliseconds),
+ *  \param newAcceleration = Acceleration value (1 is (0.25 microseconds) / (10 milliseconds) / (80 milliseconds),
  *  255 is (63,75 microseconds) / (10 milliseconds) / (80 milliseconds))
  *
  *  \return The return value is the return value of the setAcceleration funktion of the Pololu object.
  */
 bool ServoMotor::setAccelaration(unsigned short newAcceleration){
-	if (newAcceleration > 255 || newAcceleration < 0){
-		throw std::string("ServoMotor::setAcceleration: Acceleration is out of range (0 - 255).");
+	if (newAcceleration > maxAcceleration || newAcceleration < minAcceleration){
+		throw std::string("ServoMotor::setAcceleration: Acceleration is out of range (1 - 255).");
 	}else{
 		return connection_->setAcceleration(servoNumber_, newAcceleration);
 	}
@@ -149,7 +151,7 @@ unsigned short ServoMotor::getPositionInAbs(){
  *
  */
 short ServoMotor::getPositionInDeg(){
-	return (connection_->getPosition(servoNumber_) / 4 - startingPosition_) / 10;
+	return (connection_->getPosition(servoNumber_) / conFactorMyToPos - startingPosition_) / conFactorDegToPos;
 }
 
 /** \brief Returns the position of the servo as radiant.
@@ -158,15 +160,14 @@ short ServoMotor::getPositionInDeg(){
  *
  */
 float ServoMotor::getPositionInRad(){
-	return (connection_->getPosition(servoNumber_) / 4 - startingPosition_) * M_PI / 10 / 180;
+	return (connection_->getPosition(servoNumber_) / conFactorMyToPos - startingPosition_) * M_PI / conFactorDegToPos / 180;
 }
 
 /** \brief Shows which settings have to be made in the Pololu Maestro Control Center for the servo,
  *  based on the starting position and the delta for the specific servo.
  */
-void ServoMotor::showPololuValues (){
-	std::cout << "Pololu values for the servo channel settings at port " << servoNumber_ + 1 << ": \n";
-	std::cout << "Min:          " << (startingPosition_ - delta_) / 4 << " \xB5s \n";
-	std::cout << "Max:          " << (startingPosition_ + delta_) / 4 << " \xB5s \n";
-	std::cout << "8bit neutral: " << (startingPosition_) / 4 << " \xB5s \n\n";
+void ServoMotor::showPololuValues (unsigned short& min, unsigned short& mid, unsigned short& max){
+	min = (unsigned short)((startingPosition_ - delta_) / conFactorMyToPos);
+	max = (startingPosition_ + delta_) / conFactorMyToPos;
+	mid = (startingPosition_) / conFactorMyToPos;
 }

@@ -5,6 +5,7 @@
 // Description :
 //============================================================================
 #include "Pololu.hpp"
+#include "SerialCom.hpp"
 #include "ServoMotor.hpp"
 #include <string>
 #include <iostream>
@@ -465,4 +466,87 @@ void testMEXMovementSetting2(){
 
     // Close the serial Connection
     conn.closeConnection();
+}
+
+void testSerialCom(){
+	SerialCom serialCom1;
+	SerialCom serialCom2("COM4", 9600);
+
+	if (serialCom1.getPort() == NULL){
+		cout << "COM1: No port established" << endl;
+	}else{
+		cout << "COM1: " << serialCom1.getPort() << endl;
+	}
+	if (serialCom2.getPort() == NULL){
+		cout << "COM2: No port established" << endl;
+	}else{
+		cout << "COM2: " << serialCom2.getPort() << endl;
+	}
+
+	try{
+		serialCom1.openSerialCom();
+		cout << "COM1: " << serialCom1.getPort() << endl;
+	}catch (std::string &errorMessage){
+        std::cout << "COM1: " << errorMessage;
+    }
+
+	try{
+		serialCom2.openSerialCom();
+		cout << "COM2: " << serialCom1.getPort() << endl;
+	}catch (std::string &errorMessage){
+	    std::cout << "COM2: " << errorMessage;
+	}
+
+	try{
+		serialCom1.initSerialCom("COM7",9600);
+		std::cout << "COM7: initialized" << endl;
+	}catch (std::string &errorMessage){
+	    std::cout << "COM7: " << errorMessage;
+	}
+
+	try{
+		serialCom1.openSerialCom();
+		cout << "COM7: " << serialCom1.getPort() << endl;
+	}catch (std::string &errorMessage){
+	    std::cout << "COM7: " << errorMessage;
+	}
+
+	unsigned char command[4];
+	command[0] = 0x84;
+	command[1] = (unsigned char)3;
+	command[2] = (unsigned char)(6000 & 0x7F);
+	command[3] = (unsigned char)((6000 >> 7) & 0x7F);
+	serialCom2.writeSerialCom(command, 4, NULL, 0);
+
+	unsigned char commandRead[2];
+	commandRead[0] = 0x90;
+	commandRead[1] = (unsigned char)3;
+	unsigned char response[2];
+	serialCom2.writeSerialCom(commandRead, 2, response, 2);
+	cout << "COM2: Servo 4 is at position " << response[0] + 256 * response[1] ;
+}
+
+void testPololu(){
+	Pololu conn("COM4", 9600);
+
+	try{
+		conn.openConnection();
+		cout << "Pololutest: Connection opened" << endl;
+	}catch (std::string &errorMessage){
+	    std::cout << "Pololutest: " << errorMessage;
+	}
+
+	/*try{
+		conn.setPosition(3, 2400);
+		cout << "Pololutest: Position set" << endl;
+	}catch (std::string &errorMessage){
+	    std::cout << "Pololutest: " << errorMessage;
+	}*/
+
+	try{
+		conn.openConnection();
+		cout << "Pololutest: Connection closed" << endl;
+	}catch (std::string &errorMessage){
+	    std::cout << "Pololutest: " << errorMessage;
+	}
 }

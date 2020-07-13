@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : ServoMotor.hpp
+// Name        : ServoMotor.cpp
 // Author      : Willi Penner
 //
 // Description : ServoMotor source file. It contains the definition of the

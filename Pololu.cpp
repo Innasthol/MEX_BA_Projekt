@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : Pololu.hpp
+// Name        : Pololu.cpp
 // Author      : Willi Penner
 //
 // Description : Pololu source file. It contains the definition of the
@@ -26,12 +26,9 @@ Pololu::Pololu(const char* portName, unsigned short baudRate){serialCom.initSeri
  *
  */
 bool Pololu::openConnection(){
-    try
-    {
+    try{
         serialCom.openSerialCom();
-    }
-    catch (std::string &errorMessage)
-    {
+    }catch (std::string &errorMessage){
         std::cout << errorMessage;
         return 0;
     }
@@ -45,12 +42,9 @@ bool Pololu::openConnection(){
  *
  */
 bool Pololu::closeConnection(){
-    try
-    {
+    try{
         serialCom.closeSerialCom();
-    }
-    catch (std::string &errorMessage)
-    {
+    }catch (std::string &errorMessage){
         std::cout << errorMessage;
         return 0;
     }

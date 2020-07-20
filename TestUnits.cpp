@@ -359,19 +359,19 @@ void testMEXMovementSetting1(){
  *  Channelsettings:
  *      NAME       | Min       | Max        | 8-bit neutral
  *      SERVO_01   | 660       | 2460       | 1560
- *      SERVO_02   | 580       | 2380       | 1480
- *      SERVO_03   | 640       | 2440       | 1540
- *      SERVO_04   | 1023      | 1897       | 1460
+ *      SERVO_02   | 640       | 2540       | 1640
+ *      SERVO_03   | 610       | 2410       | 1510
+ *      SERVO_04   | 496       | 980        | 496
  * Status: set the servo to following positions(parking position)
  *      NAME       | Target
  *      SERVO_01   | 1560
- *      SERVO_02   | 1480
- *      SERVO_03   | 1540
- *      SERVO_04   | 1460
+ *      SERVO_02   | 1640
+ *      SERVO_03   | 1510
+ *      SERVO_04   | 496
  *
  */
 void testMEXMovementSetting2(){
-    unsigned short speed = 30;
+    unsigned short speed = 2;
     unsigned short acceleration = 200;
     // Define the port name and the baud rate
    	#ifdef _WIN32
@@ -386,9 +386,9 @@ void testMEXMovementSetting2(){
 
     // Define the servos of the robot manipulator
     ServoMotor arm_0(1, 6240, 3600, &conn);
-    ServoMotor arm_1(2, 5920, 3600, &conn);
+    ServoMotor arm_1(2, 6560, 3600, &conn);
     ServoMotor arm_2(3, 6160, 3600, &conn);
-    ServoMotor arm_3(4, 5840, 1748, &conn);
+    ServoMotor arm_3(4, 2944, 960, &conn);
 
     wait(1000);
 
@@ -407,12 +407,12 @@ void testMEXMovementSetting2(){
     arm_0.setPositionInAbs(arm_0.getMidPos());
     arm_1.setPositionInAbs(arm_1.getMidPos());
     arm_2.setPositionInAbs(arm_2.getMidPos());
-    arm_3.setPositionInAbs(arm_3.getMidPos());
+    arm_3.setPositionInAbs(arm_3.getMinPos());
     while(conn.getMovingState());
 
-    wait(1000);
+    wait(5000);
 
-    arm_3.setPositionInAbs(7000);
+    arm_3.setPositionInAbs(2400);
     while(conn.getMovingState());
     // Point top
     arm_0.setPositionInAbs(6792);
@@ -420,7 +420,9 @@ void testMEXMovementSetting2(){
     arm_2.setPositionInAbs(9040);
     while(conn.getMovingState());
 
-    arm_3.setPositionInAbs(7500);
+    arm_3.setPositionInAbs(3100);
+    while(conn.getMovingState());
+    arm_3.setPositionInAbs(2400);
     while(conn.getMovingState());
 
     // Point top left
@@ -429,10 +431,20 @@ void testMEXMovementSetting2(){
     arm_2.setPositionInAbs(9452);
     while(conn.getMovingState());
 
+    arm_3.setPositionInAbs(3200);
+    while(conn.getMovingState());
+    arm_3.setPositionInAbs(2400);
+    while(conn.getMovingState());
+
     // Point bottom left
     arm_0.setPositionInAbs(4404);
     arm_1.setPositionInAbs(3860);
     arm_2.setPositionInAbs(9600);
+    while(conn.getMovingState());
+
+    arm_3.setPositionInAbs(3300);
+    while(conn.getMovingState());
+    arm_3.setPositionInAbs(2400);
     while(conn.getMovingState());
 
     // Point bottom right
@@ -441,10 +453,20 @@ void testMEXMovementSetting2(){
     arm_2.setPositionInAbs(8856);
     while(conn.getMovingState());
 
+    arm_3.setPositionInAbs(3300);
+    while(conn.getMovingState());
+    arm_3.setPositionInAbs(2400);
+    while(conn.getMovingState());
+
     // Point top right
     arm_0.setPositionInAbs(5840);
     arm_1.setPositionInAbs(4800);
     arm_2.setPositionInAbs(8780);
+    while(conn.getMovingState());
+
+    arm_3.setPositionInAbs(3200);
+    while(conn.getMovingState());
+    arm_3.setPositionInAbs(2400);
     while(conn.getMovingState());
 
     // Point top
@@ -453,14 +475,16 @@ void testMEXMovementSetting2(){
     arm_2.setPositionInAbs(9040);
     while(conn.getMovingState());
 
-    arm_3.setPositionInAbs(7000);
+    arm_3.setPositionInAbs(3100);
+    while(conn.getMovingState());
+    arm_3.setPositionInAbs(2400);
     while(conn.getMovingState());
 
     // Move into starting position
     arm_0.setPositionInAbs(arm_0.getMidPos());
     arm_1.setPositionInAbs(arm_1.getMidPos());
     arm_2.setPositionInAbs(arm_2.getMidPos());
-    arm_3.setPositionInAbs(arm_3.getMidPos());
+    arm_3.setPositionInAbs(arm_3.getMinPos());
     while(conn.getMovingState());
 
 

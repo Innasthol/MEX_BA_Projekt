@@ -16,9 +16,9 @@ int main()
 	//testSetGetMethods();
 
 	//testMEXMovementSetting1();
-    //testMEXMovementSetting2();
+    testMEXMovementSetting2();
 
 	//Einzeltest für SerialCom und Pololu
 	//  testSerialCom();
-	testPololu();
+	//  testPololu();
 }

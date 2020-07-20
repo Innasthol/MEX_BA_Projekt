@@ -11,14 +11,14 @@
 
 int main()
 {
+	//Einzeltest für SerialCom und Pololu
+	//testSerialCom();
+	//testPololu();
+
 	//testOpenClose();
 
 	//testSetGetMethods();
 
 	//testMEXMovementSetting1();
-    testMEXMovementSetting2();
-
-	//Einzeltest für SerialCom und Pololu
-	//  testSerialCom();
-	//  testPololu();
+    //testMEXMovementSetting2();
 }

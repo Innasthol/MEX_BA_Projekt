@@ -135,9 +135,9 @@ void testSetGetMethods (){
 
 	// Defines three servomotors of two different types.
 	// ServoMotor name(<portnumber on the controller>, <middle position of the servo>, <movement range in one direction>, <pointer to the serial connection>)
-	ServoMotor SG_90_1(1, 5680, 3600, &conn);
-	ServoMotor SG_90_2(2, 5680, 3600, &conn);
-	ServoMotor DM1500_1(4, 5680, 3600, &conn);
+	ServoMotor SG_90_1(1, 6000, 3600, &conn);
+	ServoMotor SG_90_2(2, 6000, 3600, &conn);
+	ServoMotor DM1500_1(4, 6000, 3600, &conn);
 	unsigned short servoMin = 0;
 	unsigned short servoMid = 0;
 	unsigned short servoMax = 0;
@@ -547,7 +547,20 @@ void testSerialCom(){
 	commandRead[1] = (unsigned char)3;
 	unsigned char response[2];
 	serialCom2.writeSerialCom(commandRead, 2, response, 2);
-	cout << "COM2: Servo 4 is at position " << response[0] + 256 * response[1] ;
+	cout << "COM2: Servo 4 is at position " << response[0] + 256 * response[1] << endl ;
+
+	try{
+		serialCom1.closeSerialCom();
+		cout << "COM7: Closed" << endl;
+	}catch (std::string &errorMessage){
+	    std::cout << "COM7: " << errorMessage;
+	}
+	try{
+		serialCom2.closeSerialCom();
+		cout << "COM2: Closed" << endl;
+	}catch (std::string &errorMessage){
+	    std::cout << "COM2: " << errorMessage;
+	}
 }
 
 void testPololu(){
@@ -568,7 +581,7 @@ void testPololu(){
 	}*/
 
 	try{
-		conn.openConnection();
+		conn.closeConnection();
 		cout << "Pololutest: Connection closed" << endl;
 	}catch (std::string &errorMessage){
 	    std::cout << "Pololutest: " << errorMessage;
